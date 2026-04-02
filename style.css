@@ -1,0 +1,31 @@
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  padding: 10px;
+}
+
+.coche {
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.libre { background: green; }
+.uso { background: orange; color: black; }
+.poco { background: yellow; color: black; }
+.terminado { background: red; }
+
+.top button {
+  margin: 5px;
+  padding: 10px;
+  cursor: pointer;
+}
