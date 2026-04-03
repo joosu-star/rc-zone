@@ -7,50 +7,48 @@
 </head>
 <body>
 
-<h1>🚗 RC Control PRO</h1>
+<h1>🚗 RC SYSTEM</h1>
+
+<!-- NAV -->
+<div class="nav">
+  <button onclick="cambiarVista('inicio')">Inicio</button>
+  <button onclick="cambiarVista('clientes')">Clientes</button>
+  <button onclick="cambiarVista('resumen')">Resumen</button>
+</div>
 
 <div class="top">
   <button onclick="abrirCaja()">Abrir Caja</button>
   <button onclick="cerrarCaja()">Cerrar Caja</button>
   <button onclick="hacerRetiro()">Retiro</button>
-  <button onclick="toggleClientes()">Clientes</button>
 </div>
 
 <h2 id="dinero">💰 $0</h2>
 
-<!-- PANEL CLIENTES -->
-<div id="panelClientes" class="modal oculto">
-  <div class="contenido">
-    <h3>Clientes</h3>
-    <ul id="listaClientes"></ul>
-    <button onclick="toggleClientes()">Cerrar</button>
-  </div>
+<!-- INICIO -->
+<div id="inicio" class="vista">
+  <div id="coches" class="grid"></div>
 </div>
 
-<!-- PANEL INICIAR -->
-<div id="panelInicio" class="modal oculto">
+<!-- CLIENTES -->
+<div id="clientes" class="vista oculto">
+  <h2>Clientes</h2>
+  <div id="listaClientes"></div>
+</div>
+
+<!-- RESUMEN -->
+<div id="resumen" class="vista oculto">
+  <h2>Resumen del día</h2>
+  <div id="listaResumen"></div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal oculto">
   <div class="contenido">
-    <h3>Iniciar coche</h3>
-    <input id="nombreInput" placeholder="Nombre">
-    <input id="tiempoInput" type="number" placeholder="Minutos">
+    <input id="nombre" placeholder="Nombre">
+    <input id="tiempo" type="number" placeholder="Minutos">
     <button onclick="confirmarInicio()">Iniciar</button>
-    <button onclick="cerrarInicio()">Cancelar</button>
+    <button onclick="cerrarModal()">Cancelar</button>
   </div>
-</div>
-
-<div class="panel">
-  <h2>🏎️ Drift</h2>
-  <div id="drift" class="grid"></div>
-</div>
-
-<div class="panel">
-  <h2>⚽ Fútbol</h2>
-  <div id="futbol" class="grid"></div>
-</div>
-
-<div class="panel">
-  <h2>🤖 Robots</h2>
-  <div id="robot" class="grid"></div>
 </div>
 
 <script src="app.js"></script>
