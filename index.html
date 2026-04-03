@@ -2,17 +2,17 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>RC SYSTEM</title>
+  <title>RC SYSTEM PRO</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<h1>🚗 RC SYSTEM</h1>
+<h1>🚗 RC SYSTEM PRO</h1>
 
 <div class="nav">
   <button onclick="cambiarVista('inicio')">Inicio</button>
   <button onclick="cambiarVista('clientes')">Clientes</button>
-  <button onclick="cambiarVista('resumen')">Resumen</button>
+  <button onclick="cambiarVista('resumen')">Historial</button>
 </div>
 
 <div class="top">
@@ -23,24 +23,20 @@
 
 <h2 id="dinero">💰 $0</h2>
 
-<!-- INICIO -->
 <div id="inicio" class="vista">
   <div id="coches" class="grid"></div>
 </div>
 
-<!-- CLIENTES -->
 <div id="clientes" class="vista oculto">
   <h2>Clientes</h2>
   <div id="listaClientes"></div>
 </div>
 
-<!-- RESUMEN -->
 <div id="resumen" class="vista oculto">
   <h2>Historial</h2>
   <div id="listaResumen"></div>
 </div>
 
-<!-- MODAL -->
 <div id="modal" class="modal oculto">
   <div class="contenido">
     <h3>Iniciar coche</h3>
