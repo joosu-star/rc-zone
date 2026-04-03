@@ -2,137 +2,37 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>RC Control</title>
-
-  <style>
-    body {
-      font-family: Arial;
-      background: #111;
-      color: white;
-      text-align: center;
-    }
-
-    h1 {
-      margin: 20px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 10px;
-      padding: 20px;
-    }
-
-    .coche {
-      padding: 15px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .libre { background: green; }
-    .uso { background: orange; color: black; }
-    .poco { background: yellow; color: black; }
-    .terminado { background: red; }
-
-  </style>
+  <title>RC PRO</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<h1>🚗 Sistema RC</h1>
+<h1>🚗 RC Control PRO</h1>
 
-<h2>🏎️ Drift</h2>
-<div id="drift" class="grid"></div>
+<div class="top">
+  <button onclick="abrirCaja()">Abrir Caja</button>
+  <button onclick="cerrarCaja()">Cerrar Caja</button>
+  <button onclick="hacerRetiro()">Retiro</button>
+  <button onclick="verClientes()">Ver Clientes</button>
+</div>
 
-<h2>⚽ Fútbol</h2>
-<div id="futbol" class="grid"></div>
+<h2 id="dinero">💰 $0</h2>
 
-<h2>🤖 Robots</h2>
-<div id="robot" class="grid"></div>
+<div class="panel">
+  <h2>🏎️ Drift</h2>
+  <div id="drift" class="grid"></div>
+</div>
 
-<script>
-const coches = [
-  { nombre: "Drift 1", tipo: "drift" },
-  { nombre: "Drift 2", tipo: "drift" },
+<div class="panel">
+  <h2>⚽ Fútbol</h2>
+  <div id="futbol" class="grid"></div>
+</div>
 
-  ...Array.from({ length: 10 }, (_, i) => ({
-    nombre: "Futbol " + (i + 1),
-    tipo: "futbol"
-  })),
+<div class="panel">
+  <h2>🤖 Robots</h2>
+  <div id="robot" class="grid"></div>
+</div>
 
-  ...Array.from({ length: 6 }, (_, i) => ({
-    nombre: "Robot " + (i + 1),
-    tipo: "robot"
-  }))
-].map(c => ({
-  ...c,
-  estado: "libre",
-  tiempo: 0,
-  cliente: ""
-}));
-
-function render() {
-  document.getElementById("drift").innerHTML = "";
-  document.getElementById("futbol").innerHTML = "";
-  document.getElementById("robot").innerHTML = "";
-
-  coches.forEach((c, i) => {
-    const div = document.createElement("div");
-
-    let clase = "libre";
-    if (c.estado === "uso" && c.tiempo > 5) clase = "uso";
-    if (c.tiempo <= 5 && c.tiempo > 0) clase = "poco";
-    if (c.tiempo <= 0 && c.estado === "uso") clase = "terminado";
-
-    div.className = "coche " + clase;
-
-    div.innerHTML = `
-      ${c.nombre}<br>
-      ${c.cliente || ""}
-      ${c.tiempo > 0 ? "<br>" + c.tiempo + " min" : ""}
-    `;
-
-    div.onclick = () => usar(i);
-
-    document.getElementById(c.tipo).appendChild(div);
-  });
-}
-
-function usar(i) {
-  const c = coches[i];
-
-  if (c.estado === "uso") return;
-
-  const cliente = prompt("Nombre del cliente:");
-  if (!cliente) return;
-
-  c.estado = "uso";
-  c.cliente = cliente;
-  c.tiempo = 15;
-
-  render();
-}
-
-// Timer
-setInterval(() => {
-  coches.forEach(c => {
-    if (c.estado === "uso") {
-      c.tiempo--;
-
-      if (c.tiempo <= 0) {
-        c.estado = "libre";
-        c.cliente = "";
-        c.tiempo = 0;
-      }
-    }
-  });
-
-  render();
-}, 60000);
-
-render();
-</script>
-
+<script src="app.js"></script>
 </body>
 </html>
