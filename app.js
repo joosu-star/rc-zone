@@ -12,11 +12,10 @@ let data;
 try {
   data = JSON.parse(localStorage.getItem("rc_data")) || {};
 } catch {
-  error("Error en datos, reiniciando...");
   data = {};
 }
 
-// DEFAULTS
+// DEFAULT
 data.coches = data.coches || [];
 data.clientes = data.clientes || [];
 data.ventas = data.ventas || [];
@@ -42,22 +41,16 @@ if(data.coches.length===0){
 }
 
 function guardar(){
-  try {
-    localStorage.setItem("rc_data",JSON.stringify(data));
-  } catch {
-    error("No se pudo guardar");
-  }
+  localStorage.setItem("rc_data",JSON.stringify(data));
 }
 
 // VISTAS
 function cambiarVista(v){
   ["inicio","clientes","resumen"].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.classList.add("oculto");
+    document.getElementById(id)?.classList.add("oculto");
   });
 
-  const vista = document.getElementById(v);
-  if(vista) vista.classList.remove("oculto");
+  document.getElementById(v)?.classList.remove("oculto");
 
   renderClientes();
   renderResumen();
@@ -66,29 +59,24 @@ function cambiarVista(v){
 // RENDER
 function render(){
   const cont = document.getElementById("coches");
-
-  if(!cont){
-    error("No existe el contenedor de coches");
-    return;
-  }
+  if(!cont) return;
 
   cont.innerHTML="";
 
   data.coches.forEach((c,i)=>{
-    const div=document.createElement("div");
-
     let clase="libre";
     if(c.estado==="uso" && c.tiempo>5) clase="activo";
     if(c.tiempo<=5 && c.tiempo>0) clase="poco";
     if(c.tiempo<=0 && c.estado==="uso") clase="terminado";
 
+    const div=document.createElement("div");
     div.className="coche "+clase;
 
     div.innerHTML=`
       <strong>${c.nombre}</strong><br>
       ${c.cliente || ""}<br>
-      ${c.tiempo>0 ? c.tiempo+" min" : ""}
-      <br>
+      ${c.tiempo>0 ? c.tiempo+" min restantes" : ""}
+      <br><br>
       ${
         c.estado==="uso"
         ? `<button onclick="terminar(${i})">✔</button>
@@ -106,30 +94,25 @@ function render(){
 // MODAL
 function abrirModal(i){
   if(!data.caja.abierta){
-    alert("Abre caja primero");
+    alert("Debes abrir caja primero");
     return;
   }
   cocheSel=i;
-  document.getElementById("modal")?.classList.remove("oculto");
+  document.getElementById("modal").classList.remove("oculto");
 }
 
 function cerrarModal(){
-  document.getElementById("modal")?.classList.add("oculto");
+  document.getElementById("modal").classList.add("oculto");
 }
 
 // INICIAR
 function confirmarInicio(){
-  const nombre=document.getElementById("nombre")?.value.trim();
-  const tiempo=Number(document.getElementById("tiempo")?.value);
+  const nombre=document.getElementById("nombre").value.trim();
+  const tiempo=Number(document.getElementById("tiempo").value);
 
-  if(!nombre || tiempo<=0){
-    error("Datos inválidos");
-    return;
-  }
+  if(!nombre || tiempo<=0) return;
 
   const c=data.coches[cocheSel];
-  if(!c) return;
-
   c.estado="uso";
   c.cliente=nombre;
   c.tiempo=tiempo;
@@ -153,11 +136,12 @@ function confirmarInicio(){
 // TERMINAR
 function terminar(i){
   const c=data.coches[i];
-  if(!c) return;
+
+  const total = Math.ceil(c.tiempoInicial/15)*50;
 
   data.ventas.push({
     cliente:c.cliente,
-    total: Math.ceil(c.tiempoInicial/15)*50
+    total
   });
 
   c.estado="libre";
@@ -172,13 +156,10 @@ function terminar(i){
 // CANCELAR
 function cancelar(i){
   const c=data.coches[i];
-  if(!c) return;
-
   c.estado="libre";
   c.tiempo=0;
   c.tiempoInicial=0;
   c.cliente="";
-
   guardar();
   render();
 }
@@ -206,10 +187,8 @@ function totalRetiros(){
   return data.retiros.reduce((a,r)=>a+r.monto,0);
 }
 function actualizarDinero(){
-  const el=document.getElementById("dinero");
-  if(el){
-    el.innerText="💰 $" + (data.caja.inicial + totalVentas() - totalRetiros());
-  }
+  document.getElementById("dinero").innerText =
+    "💰 $" + (data.caja.inicial + totalVentas() - totalRetiros());
 }
 
 // CAJA
@@ -220,7 +199,7 @@ function abrirCaja(){
   }
 
   const monto=Number(prompt("Monto inicial"));
-  if(!monto || monto<0) return;
+  if(!monto) return;
 
   data.caja={abierta:true,inicial:monto};
   guardar();
@@ -232,10 +211,17 @@ function cerrarCaja(){
 
   if(!confirm("¿Cerrar caja?")) return;
 
+  const totalVentasDia = totalVentas();
+  const totalRetirosDia = totalRetiros();
+  const totalFinal = data.caja.inicial + totalVentasDia - totalRetirosDia;
+
   data.historial.push({
     fecha:new Date().toLocaleDateString(),
-    ventas:[...data.ventas],
-    retiros:[...data.retiros],
+    hora:new Date().toLocaleTimeString(),
+    cajaInicial: data.caja.inicial,
+    totalVentas: totalVentasDia,
+    totalRetiros: totalRetirosDia,
+    totalFinal: totalFinal,
     clientes:[...data.clientes]
   });
 
@@ -246,6 +232,7 @@ function cerrarCaja(){
 
   guardar();
   render();
+  renderResumen();
 }
 
 // CLIENTES
@@ -267,9 +254,24 @@ function renderResumen(){
   if(!cont) return;
 
   cont.innerHTML="";
+
   data.historial.forEach(d=>{
     const div=document.createElement("div");
-    div.innerText=`${d.fecha} | Clientes: ${d.clientes.length}`;
+
+    div.style.border="1px solid white";
+    div.style.margin="10px";
+    div.style.padding="10px";
+    div.style.borderRadius="10px";
+
+    div.innerHTML=`
+      📅 ${d.fecha} - ${d.hora}<br>
+      💰 Inicial: $${d.cajaInicial}<br>
+      🟢 Ventas: $${d.totalVentas}<br>
+      🔴 Retiros: $${d.totalRetiros}<br>
+      🟡 Final: $${d.totalFinal}<br>
+      👥 Clientes: ${d.clientes.length}
+    `;
+
     cont.appendChild(div);
   });
 }
