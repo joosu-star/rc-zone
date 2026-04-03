@@ -12,7 +12,7 @@
 <div class="nav">
   <button onclick="cambiarVista('inicio')">Inicio</button>
   <button onclick="cambiarVista('clientes')">Clientes</button>
-  <button onclick="cambiarVista('resumen')">Historial</button>
+  <button onclick="cambiarVista('historial')">Historial</button>
 </div>
 
 <div class="top">
@@ -32,19 +32,9 @@
   <div id="listaClientes"></div>
 </div>
 
-<div id="resumen" class="oculto">
+<div id="historial" class="oculto">
   <h2>Historial</h2>
-  <div id="listaResumen"></div>
-</div>
-
-<div id="modal" class="modal oculto">
-  <div class="contenido">
-    <h3>Iniciar coche</h3>
-    <input id="nombre" placeholder="Nombre">
-    <input id="tiempo" type="number" placeholder="Minutos">
-    <button onclick="confirmarInicio()">Iniciar</button>
-    <button onclick="cerrarModal()">Cancelar</button>
-  </div>
+  <div id="listaHistorial"></div>
 </div>
 
 <script src="app.js"></script>
