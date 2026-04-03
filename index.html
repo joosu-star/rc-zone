@@ -2,14 +2,13 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>RC PRO</title>
+  <title>RC SYSTEM</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <h1>🚗 RC SYSTEM</h1>
 
-<!-- NAV -->
 <div class="nav">
   <button onclick="cambiarVista('inicio')">Inicio</button>
   <button onclick="cambiarVista('clientes')">Clientes</button>
@@ -37,13 +36,14 @@
 
 <!-- RESUMEN -->
 <div id="resumen" class="vista oculto">
-  <h2>Resumen del día</h2>
+  <h2>Historial</h2>
   <div id="listaResumen"></div>
 </div>
 
 <!-- MODAL -->
 <div id="modal" class="modal oculto">
   <div class="contenido">
+    <h3>Iniciar coche</h3>
     <input id="nombre" placeholder="Nombre">
     <input id="tiempo" type="number" placeholder="Minutos">
     <button onclick="confirmarInicio()">Iniciar</button>
