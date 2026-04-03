@@ -1,3 +1,5 @@
+let vistaActual = "inicio";
+
 function error(msg){
   console.error(msg);
   const box = document.getElementById("errorBox");
@@ -27,12 +29,16 @@ let cocheSel = null;
 
 // INIT COCHES
 if(data.coches.length===0){
-  data.coches = [
-    "Drift 1","Drift 2",
-    ...Array.from({length:10},(_,i)=>"Futbol "+(i+1)),
-    ...Array.from({length:6},(_,i)=>"Robot "+(i+1))
-  ].map(n=>({
-    nombre:n,
+  const lista = [
+    {nombre:"Drift 1", tipo:"Drift"},
+    {nombre:"Drift 2", tipo:"Drift"},
+    ...Array.from({length:10},(_,i)=>({nombre:"Futbol "+(i+1),tipo:"Futbol"})),
+    ...Array.from({length:6},(_,i)=>({nombre:"Robot "+(i+1),tipo:"Robot"}))
+  ];
+
+  data.coches = lista.map(c=>({
+    nombre:c.nombre,
+    tipo:c.tipo,
     estado:"libre",
     tiempo:0,
     tiempoInicial:0,
@@ -46,14 +52,32 @@ function guardar(){
 
 // VISTAS
 function cambiarVista(v){
+  vistaActual = v;
   ["inicio","clientes","resumen"].forEach(id=>{
     document.getElementById(id)?.classList.add("oculto");
   });
 
   document.getElementById(v)?.classList.remove("oculto");
 
-  renderClientes();
-  renderResumen();
+  if(v==="clientes") renderClientes();
+  if(v==="resumen") renderResumen();
+}
+
+function mantenerVista(){
+  ["inicio","clientes","resumen"].forEach(id=>{
+    document.getElementById(id)?.classList.add("oculto");
+  });
+
+  document.getElementById(vistaActual)?.classList.remove("oculto");
+}
+
+// ORDEN
+function ordenarCoches(){
+  return [...data.coches].sort((a,b)=>{
+    if(a.estado==="uso" && b.estado!=="uso") return -1;
+    if(a.estado!=="uso" && b.estado==="uso") return 1;
+    return a.tipo.localeCompare(b.tipo);
+  });
 }
 
 // RENDER
@@ -63,32 +87,49 @@ function render(){
 
   cont.innerHTML="";
 
-  data.coches.forEach((c,i)=>{
-    let clase="libre";
-    if(c.estado==="uso" && c.tiempo>5) clase="activo";
-    if(c.tiempo<=5 && c.tiempo>0) clase="poco";
-    if(c.tiempo<=0 && c.estado==="uso") clase="terminado";
+  const categorias=["Drift","Futbol","Robot"];
+  const cochesOrdenados = ordenarCoches();
 
-    const div=document.createElement("div");
-    div.className="coche "+clase;
+  categorias.forEach(cat=>{
+    const titulo=document.createElement("h2");
+    titulo.innerText=cat;
+    cont.appendChild(titulo);
 
-    div.innerHTML=`
-      <strong>${c.nombre}</strong><br>
-      ${c.cliente || ""}<br>
-      ${c.tiempo>0 ? c.tiempo+" min restantes" : ""}
-      <br><br>
-      ${
-        c.estado==="uso"
-        ? `<button onclick="terminar(${i})">✔</button>
-           <button onclick="cancelar(${i})">✖</button>`
-        : `<button onclick="abrirModal(${i})">▶</button>`
-      }
-    `;
+    const grid=document.createElement("div");
+    grid.className="grid";
 
-    cont.appendChild(div);
+    cochesOrdenados.filter(c=>c.tipo===cat).forEach(c=>{
+      const i=data.coches.findIndex(x=>x.nombre===c.nombre);
+
+      let clase="libre";
+      if(c.estado==="uso" && c.tiempo>5) clase="activo";
+      if(c.tiempo<=5 && c.tiempo>0) clase="poco";
+      if(c.tiempo<=0 && c.estado==="uso") clase="terminado";
+
+      const div=document.createElement("div");
+      div.className="coche "+clase;
+
+      div.innerHTML=`
+        <strong>${c.nombre}</strong><br>
+        ${c.cliente || ""}<br>
+        ${c.tiempo>0 ? c.tiempo+" min restantes":""}
+        <br><br>
+        ${
+          c.estado==="uso"
+          ? `<button onclick="terminar(${i})">✔</button>
+             <button onclick="cancelar(${i})">✖</button>`
+          : `<button onclick="abrirModal(${i})">▶</button>`
+        }
+      `;
+
+      grid.appendChild(div);
+    });
+
+    cont.appendChild(grid);
   });
 
   actualizarDinero();
+  mantenerVista();
 }
 
 // MODAL
@@ -137,11 +178,9 @@ function confirmarInicio(){
 function terminar(i){
   const c=data.coches[i];
 
-  const total = Math.ceil(c.tiempoInicial/15)*50;
-
   data.ventas.push({
     cliente:c.cliente,
-    total
+    total: Math.ceil(c.tiempoInicial/15)*50
   });
 
   c.estado="libre";
@@ -248,7 +287,7 @@ function renderClientes(){
   });
 }
 
-// RESUMEN
+// HISTORIAL SIN UNDEFINED
 function renderResumen(){
   const cont=document.getElementById("listaResumen");
   if(!cont) return;
@@ -258,18 +297,24 @@ function renderResumen(){
   data.historial.forEach(d=>{
     const div=document.createElement("div");
 
+    const inicial = d.cajaInicial ?? 0;
+    const ventas = d.totalVentas ?? 0;
+    const retiros = d.totalRetiros ?? 0;
+    const final = d.totalFinal ?? (inicial + ventas - retiros);
+    const clientes = d.clientes?.length ?? 0;
+
     div.style.border="1px solid white";
     div.style.margin="10px";
     div.style.padding="10px";
     div.style.borderRadius="10px";
 
     div.innerHTML=`
-      📅 ${d.fecha} - ${d.hora}<br>
-      💰 Inicial: $${d.cajaInicial}<br>
-      🟢 Ventas: $${d.totalVentas}<br>
-      🔴 Retiros: $${d.totalRetiros}<br>
-      🟡 Final: $${d.totalFinal}<br>
-      👥 Clientes: ${d.clientes.length}
+      📅 ${d.fecha || ""} ${d.hora || ""}<br>
+      💰 Inicial: $${inicial}<br>
+      🟢 Ventas: $${ventas}<br>
+      🔴 Retiros: $${retiros}<br>
+      🟡 Final: $${final}<br>
+      👥 Clientes: ${clientes}
     `;
 
     cont.appendChild(div);
