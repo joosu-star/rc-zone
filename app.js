@@ -1,12 +1,12 @@
-// ----- DATOS -----
 let data = JSON.parse(localStorage.getItem("rc_data")) || {
   coches: [],
   ventas: [],
   retiros: [],
+  clientes: [],
   caja: { abierta: false, inicial: 0 }
 };
 
-// ----- INICIALIZAR COCHES -----
+// INICIALIZAR COCHES
 if (data.coches.length === 0) {
   data.coches = [
     { nombre: "Drift 1", tipo: "drift" },
@@ -29,19 +29,16 @@ if (data.coches.length === 0) {
   }));
 }
 
-// ----- PRECIOS -----
 const precios = {
   drift: 10,
   futbol: 8,
   robot: 12
 };
 
-// ----- GUARDAR -----
 function guardar() {
   localStorage.setItem("rc_data", JSON.stringify(data));
 }
 
-// ----- RENDER -----
 function render() {
   ["drift", "futbol", "robot"].forEach(t => {
     document.getElementById(t).innerHTML = "";
@@ -51,7 +48,7 @@ function render() {
     const div = document.createElement("div");
 
     let clase = "libre";
-    if (c.estado === "uso" && c.tiempo > 5) clase = "uso";
+    if (c.estado === "uso" && c.tiempo > 5) clase = "activo";
     if (c.tiempo <= 5 && c.tiempo > 0) clase = "poco";
     if (c.tiempo <= 0 && c.estado === "uso") clase = "terminado";
 
@@ -63,7 +60,7 @@ function render() {
       ${c.tiempo > 0 ? "<br>" + c.tiempo + " min" : ""}
     `;
 
-    div.onclick = () => usar(i);
+    div.onclick = () => acciones(i);
 
     document.getElementById(c.tipo).appendChild(div);
   });
@@ -71,42 +68,83 @@ function render() {
   actualizarDinero();
 }
 
-// ----- USAR COCHE -----
-function usar(i) {
+// ACCIONES
+function acciones(i) {
   const c = data.coches[i];
-  if (c.estado === "uso") return;
 
+  if (c.estado === "uso") {
+    const opcion = prompt("1 = Terminar\n2 = Cancelar");
+    
+    if (opcion == "1") terminar(i);
+    if (opcion == "2") cancelar(i);
+
+  } else {
+    iniciar(i);
+  }
+}
+
+// INICIAR
+function iniciar(i) {
   const cliente = prompt("Nombre:");
   if (!cliente) return;
 
+  const tiempo = Number(prompt("Minutos (máx 60):"));
+  if (!tiempo || tiempo <= 0) return;
+
+  const c = data.coches[i];
   c.estado = "uso";
   c.cliente = cliente;
-  c.tiempo = 15;
+  c.tiempo = tiempo;
+
+  if (!data.clientes.includes(cliente)) {
+    data.clientes.push(cliente);
+  }
 
   guardar();
   render();
 }
 
-// ----- TIMER -----
+// TERMINAR (cobra)
+function terminar(i) {
+  const c = data.coches[i];
+
+  const total = precios[c.tipo] * c.tiempo;
+
+  data.ventas.push({
+    coche: c.nombre,
+    cliente: c.cliente,
+    total,
+    fecha: new Date()
+  });
+
+  c.estado = "libre";
+  c.cliente = "";
+  c.tiempo = 0;
+
+  guardar();
+  render();
+}
+
+// CANCELAR (no cobra)
+function cancelar(i) {
+  const c = data.coches[i];
+
+  c.estado = "libre";
+  c.cliente = "";
+  c.tiempo = 0;
+
+  guardar();
+  render();
+}
+
+// TIMER
 setInterval(() => {
   data.coches.forEach(c => {
     if (c.estado === "uso") {
       c.tiempo--;
 
       if (c.tiempo <= 0) {
-        // generar venta
-        const precio = precios[c.tipo] * 15;
-
-        data.ventas.push({
-          coche: c.nombre,
-          cliente: c.cliente,
-          total: precio,
-          fecha: new Date()
-        });
-
-        c.estado = "libre";
-        c.cliente = "";
-        c.tiempo = 0;
+        c.estado = "terminado";
       }
     }
   });
@@ -115,7 +153,7 @@ setInterval(() => {
   render();
 }, 60000);
 
-// ----- DINERO -----
+// DINERO
 function totalVentas() {
   return data.ventas.reduce((a, v) => a + v.total, 0);
 }
@@ -125,11 +163,11 @@ function totalRetiros() {
 }
 
 function actualizarDinero() {
-  const total = totalVentas() - totalRetiros();
-  document.getElementById("dinero").innerText = "💰 $" + total;
+  document.getElementById("dinero").innerText =
+    "💰 $" + (totalVentas() - totalRetiros());
 }
 
-// ----- CAJA -----
+// CAJA
 function abrirCaja() {
   const monto = Number(prompt("Monto inicial:"));
   if (!monto) return;
@@ -139,32 +177,35 @@ function abrirCaja() {
 }
 
 function cerrarCaja() {
-  const total = totalVentas();
-  const retiros = totalRetiros();
-
   alert(
-    "Ventas: $" + total +
-    "\nRetiros: $" + retiros +
-    "\nTotal final: $" + (total - retiros)
+    "Ventas: $" + totalVentas() +
+    "\nRetiros: $" + totalRetiros() +
+    "\nTotal: $" + (totalVentas() - totalRetiros())
   );
 }
 
-// ----- RETIROS -----
+// RETIROS
 function hacerRetiro() {
-  const monto = Number(prompt("Monto a retirar:"));
+  const monto = Number(prompt("Monto:"));
   const motivo = prompt("Motivo:");
 
   if (!monto || !motivo) return;
 
-  data.retiros.push({
-    monto,
-    motivo,
-    fecha: new Date()
-  });
+  data.retiros.push({ monto, motivo, fecha: new Date() });
 
   guardar();
   render();
 }
 
-// ----- INICIO -----
+// CLIENTES
+function verClientes() {
+  if (data.clientes.length === 0) {
+    alert("No hay clientes aún");
+    return;
+  }
+
+  alert("Clientes:\n\n" + data.clientes.join("\n"));
+}
+
+// INICIO
 render();
