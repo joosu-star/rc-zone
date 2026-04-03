@@ -6,17 +6,17 @@ let data = JSON.parse(localStorage.getItem("rc_data")) || {
   caja: { abierta: false, inicial: 0 }
 };
 
-// INICIALIZAR COCHES
+let cocheSeleccionado = null;
+
+// INICIALIZAR
 if (data.coches.length === 0) {
   data.coches = [
     { nombre: "Drift 1", tipo: "drift" },
     { nombre: "Drift 2", tipo: "drift" },
-
     ...Array.from({ length: 10 }, (_, i) => ({
       nombre: "Futbol " + (i + 1),
       tipo: "futbol"
     })),
-
     ...Array.from({ length: 6 }, (_, i) => ({
       nombre: "Robot " + (i + 1),
       tipo: "robot"
@@ -29,22 +29,16 @@ if (data.coches.length === 0) {
   }));
 }
 
-const precios = {
-  drift: 10,
-  futbol: 8,
-  robot: 12
-};
-
 function guardar() {
   localStorage.setItem("rc_data", JSON.stringify(data));
 }
 
 function render() {
-  ["drift", "futbol", "robot"].forEach(t => {
+  ["drift","futbol","robot"].forEach(t => {
     document.getElementById(t).innerHTML = "";
   });
 
-  data.coches.forEach((c, i) => {
+  data.coches.forEach((c,i) => {
     const div = document.createElement("div");
 
     let clase = "libre";
@@ -57,10 +51,13 @@ function render() {
     div.innerHTML = `
       ${c.nombre}<br>
       ${c.cliente || ""}
-      ${c.tiempo > 0 ? "<br>" + c.tiempo + " min" : ""}
+      ${c.tiempo > 0 ? "<br>"+c.tiempo+" min" : ""}
+      <br>
+      ${c.estado === "uso" ? `
+        <button onclick="terminar(${i})">✔</button>
+        <button onclick="cancelar(${i})">✖</button>
+      ` : `<button onclick="abrirInicio(${i})">Iniciar</button>`}
     `;
-
-    div.onclick = () => acciones(i);
 
     document.getElementById(c.tipo).appendChild(div);
   });
@@ -68,144 +65,134 @@ function render() {
   actualizarDinero();
 }
 
-// ACCIONES
-function acciones(i) {
-  const c = data.coches[i];
-
-  if (c.estado === "uso") {
-    const opcion = prompt("1 = Terminar\n2 = Cancelar");
-    
-    if (opcion == "1") terminar(i);
-    if (opcion == "2") cancelar(i);
-
-  } else {
-    iniciar(i);
-  }
+// ----- INICIO -----
+function abrirInicio(i){
+  cocheSeleccionado = i;
+  document.getElementById("panelInicio").classList.remove("oculto");
 }
 
-// INICIAR
-function iniciar(i) {
-  const cliente = prompt("Nombre:");
-  if (!cliente) return;
+function cerrarInicio(){
+  document.getElementById("panelInicio").classList.add("oculto");
+}
 
-  const tiempo = Number(prompt("Minutos (máx 60):"));
-  if (!tiempo || tiempo <= 0) return;
+function confirmarInicio(){
+  const nombre = document.getElementById("nombreInput").value;
+  const tiempo = Number(document.getElementById("tiempoInput").value);
 
-  const c = data.coches[i];
+  if(!nombre || !tiempo) return;
+
+  const c = data.coches[cocheSeleccionado];
   c.estado = "uso";
-  c.cliente = cliente;
+  c.cliente = nombre;
   c.tiempo = tiempo;
 
-  if (!data.clientes.includes(cliente)) {
-    data.clientes.push(cliente);
-  }
+  if (!data.clientes.includes(nombre)) data.clientes.push(nombre);
 
+  cerrarInicio();
   guardar();
   render();
 }
 
-// TERMINAR (cobra)
-function terminar(i) {
+// ----- TERMINAR -----
+function terminar(i){
   const c = data.coches[i];
 
-  const total = precios[c.tipo] * c.tiempo;
+  const total = Math.ceil(c.tiempo / 15) * 50;
 
   data.ventas.push({
-    coche: c.nombre,
     cliente: c.cliente,
-    total,
-    fecha: new Date()
+    total
   });
 
-  c.estado = "libre";
-  c.cliente = "";
-  c.tiempo = 0;
+  c.estado="libre";
+  c.tiempo=0;
+  c.cliente="";
 
   guardar();
   render();
 }
 
-// CANCELAR (no cobra)
-function cancelar(i) {
+// ----- CANCELAR -----
+function cancelar(i){
   const c = data.coches[i];
-
-  c.estado = "libre";
-  c.cliente = "";
-  c.tiempo = 0;
-
+  c.estado="libre";
+  c.tiempo=0;
+  c.cliente="";
   guardar();
   render();
 }
 
-// TIMER
-setInterval(() => {
-  data.coches.forEach(c => {
-    if (c.estado === "uso") {
+// ----- TIMER -----
+setInterval(()=>{
+  data.coches.forEach(c=>{
+    if(c.estado==="uso"){
       c.tiempo--;
-
-      if (c.tiempo <= 0) {
-        c.estado = "terminado";
-      }
+      if(c.tiempo<=0) c.estado="terminado";
     }
   });
-
   guardar();
   render();
-}, 60000);
+},60000);
 
-// DINERO
-function totalVentas() {
-  return data.ventas.reduce((a, v) => a + v.total, 0);
+// ----- DINERO -----
+function totalVentas(){
+  return data.ventas.reduce((a,v)=>a+v.total,0);
+}
+function totalRetiros(){
+  return data.retiros.reduce((a,r)=>a+r.monto,0);
 }
 
-function totalRetiros() {
-  return data.retiros.reduce((a, r) => a + r.monto, 0);
+function actualizarDinero(){
+  const total = data.caja.inicial + totalVentas() - totalRetiros();
+  document.getElementById("dinero").innerText="💰 $"+total;
 }
 
-function actualizarDinero() {
-  document.getElementById("dinero").innerText =
-    "💰 $" + (totalVentas() - totalRetiros());
-}
-
-// CAJA
-function abrirCaja() {
+// ----- CAJA -----
+function abrirCaja(){
   const monto = Number(prompt("Monto inicial:"));
-  if (!monto) return;
+  if(!monto) return;
 
-  data.caja = { abierta: true, inicial: monto };
+  data.caja = { abierta:true, inicial:monto };
   guardar();
+  render();
 }
 
-function cerrarCaja() {
+function cerrarCaja(){
+  if(!confirm("¿Cerrar caja?")) return;
+
   alert(
-    "Ventas: $" + totalVentas() +
-    "\nRetiros: $" + totalRetiros() +
-    "\nTotal: $" + (totalVentas() - totalRetiros())
+    "Total: $" + (data.caja.inicial + totalVentas() - totalRetiros())
   );
 }
 
-// RETIROS
-function hacerRetiro() {
+// ----- RETIROS -----
+function hacerRetiro(){
   const monto = Number(prompt("Monto:"));
   const motivo = prompt("Motivo:");
+  if(!monto || !motivo) return;
 
-  if (!monto || !motivo) return;
-
-  data.retiros.push({ monto, motivo, fecha: new Date() });
-
+  data.retiros.push({monto,motivo});
   guardar();
   render();
 }
 
-// CLIENTES
-function verClientes() {
-  if (data.clientes.length === 0) {
-    alert("No hay clientes aún");
-    return;
-  }
+// ----- CLIENTES -----
+function toggleClientes(){
+  const panel = document.getElementById("panelClientes");
 
-  alert("Clientes:\n\n" + data.clientes.join("\n"));
+  if(panel.classList.contains("oculto")){
+    const lista = document.getElementById("listaClientes");
+    lista.innerHTML = "";
+    data.clientes.forEach(c=>{
+      const li = document.createElement("li");
+      li.textContent = c;
+      lista.appendChild(li);
+    });
+
+    panel.classList.remove("oculto");
+  }else{
+    panel.classList.add("oculto");
+  }
 }
 
-// INICIO
 render();
