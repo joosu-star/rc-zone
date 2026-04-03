@@ -23,6 +23,7 @@
 
 <h2 id="dinero">💰 $0</h2>
 
+<!-- VISTAS -->
 <div id="inicio">
   <div id="coches" class="grid"></div>
 </div>
@@ -35,6 +36,17 @@
 <div id="historial" class="oculto">
   <h2>Historial</h2>
   <div id="listaHistorial"></div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal oculto">
+  <div class="contenido">
+    <h3>Iniciar coche</h3>
+    <input id="nombre" placeholder="Nombre">
+    <input id="tiempo" type="number" placeholder="Minutos">
+    <button onclick="confirmarInicio()">Iniciar</button>
+    <button onclick="cerrarModal()">Cancelar</button>
+  </div>
 </div>
 
 <script src="app.js"></script>
