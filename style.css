@@ -1,11 +1,10 @@
 body {
   font-family: Arial;
-  background: linear-gradient(135deg,#0f172a,#020617);
+  background: #0f172a;
   color: white;
   text-align: center;
 }
 
-/* NAV */
 button {
   padding: 10px;
   margin: 5px;
@@ -14,39 +13,21 @@ button {
   cursor: pointer;
 }
 
-/* CONTENEDOR PRINCIPAL */
-#coches {
-  width: 95%;
-  margin: auto;
-}
-
-/* CATEGORÍA */
-.categoria {
-  margin-top: 20px;
-}
-
-.categoria h2 {
-  text-align: left;
-  margin-left: 10px;
-}
-
-/* GRID BIEN HECHO */
+/* GRID PRINCIPAL (TODO EN UNA SOLA VISTA) */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  grid-template-columns: repeat(6, 1fr);
   gap: 10px;
   padding: 10px;
 }
 
-/* TARJETAS */
 .coche {
-  padding: 15px;
-  border-radius: 12px;
-  text-align: center;
+  padding: 12px;
+  border-radius: 10px;
 }
 
 /* COLORES */
-.libre { background: gray; }
+.libre { background: #555; }
 .activo { background: green; }
 .poco { background: orange; color:black; }
 .terminado { background: red; }
@@ -67,7 +48,6 @@ button {
 .contenido {
   background:#1e293b;
   padding:20px;
-  width:300px;
   border-radius:10px;
 }
 
