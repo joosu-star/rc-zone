@@ -13,10 +13,30 @@
   <button onclick="abrirCaja()">Abrir Caja</button>
   <button onclick="cerrarCaja()">Cerrar Caja</button>
   <button onclick="hacerRetiro()">Retiro</button>
-  <button onclick="verClientes()">Ver Clientes</button>
+  <button onclick="toggleClientes()">Clientes</button>
 </div>
 
 <h2 id="dinero">💰 $0</h2>
+
+<!-- PANEL CLIENTES -->
+<div id="panelClientes" class="modal oculto">
+  <div class="contenido">
+    <h3>Clientes</h3>
+    <ul id="listaClientes"></ul>
+    <button onclick="toggleClientes()">Cerrar</button>
+  </div>
+</div>
+
+<!-- PANEL INICIAR -->
+<div id="panelInicio" class="modal oculto">
+  <div class="contenido">
+    <h3>Iniciar coche</h3>
+    <input id="nombreInput" placeholder="Nombre">
+    <input id="tiempoInput" type="number" placeholder="Minutos">
+    <button onclick="confirmarInicio()">Iniciar</button>
+    <button onclick="cerrarInicio()">Cancelar</button>
+  </div>
+</div>
 
 <div class="panel">
   <h2>🏎️ Drift</h2>
