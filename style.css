@@ -5,6 +5,17 @@ body {
   text-align: center;
 }
 
+/* VISTAS (ARREGLA EL BUG DE PESTAÑAS) */
+#inicio, #clientes, #historial {
+  display: none;
+}
+
+#inicio.activo,
+#clientes.activo,
+#historial.activo {
+  display: block;
+}
+
 button {
   padding: 10px;
   margin: 5px;
@@ -13,6 +24,16 @@ button {
   cursor: pointer;
 }
 
+/* SECCIONES */
+.seccion {
+  margin-top: 20px;
+}
+
+.seccion h2 {
+  margin-bottom: 10px;
+}
+
+/* GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -20,6 +41,7 @@ button {
   padding: 10px;
 }
 
+/* COCHES */
 .coche {
   padding: 12px;
   border-radius: 10px;
@@ -39,5 +61,3 @@ button {
   border-radius: 10px;
   text-align: left;
 }
-
-.oculto { display:none; }
