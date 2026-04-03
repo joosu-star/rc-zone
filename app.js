@@ -32,15 +32,13 @@ function guardar(){
 
 // 🔥 VISTAS SEGURAS
 function cambiarVista(v){
-  vista = v;
-
   ["inicio","clientes","historial"].forEach(id=>{
     const el = document.getElementById(id);
-    if(el) el.classList.add("oculto");
+    if(el) el.classList.remove("activo");
   });
 
   const actual = document.getElementById(v);
-  if(actual) actual.classList.remove("oculto");
+  if(actual) actual.classList.add("activo");
 
   if(v==="clientes") renderClientes();
   if(v==="historial") renderHistorial();
@@ -49,30 +47,56 @@ function cambiarVista(v){
 // 🔥 RENDER
 function render(){
   const cont = document.getElementById("coches");
-  if(!cont) return;
-
   cont.innerHTML="";
 
-  data.coches.forEach((c,i)=>{
-    let clase="libre";
-    if(c.estado==="uso" && c.tiempo>5) clase="activo";
-    if(c.tiempo<=5 && c.tiempo>0) clase="poco";
-    if(c.tiempo<=0 && c.estado==="uso") clase="terminado";
+  const tipos = ["Drift","Futbol","Robot"];
 
-    const div=document.createElement("div");
-    div.className="coche "+clase;
+  tipos.forEach(tipo=>{
+    const seccion = document.createElement("div");
+    seccion.className="seccion";
 
-    div.innerHTML=`
-      <b>${c.nombre}</b><br>
-      ${c.cliente || ""}<br>
-      ${c.tiempo>0 ? c.tiempo+" min":""}<br>
-      ${
-        c.estado==="uso"
-        ? `<button onclick="terminar(${i})">✔</button>
-           <button onclick="cancelar(${i})">✖</button>`
-        : `<button onclick="abrirModal(${i})">▶</button>`
-      }
-    `;
+    const titulo = document.createElement("h2");
+    titulo.innerText = tipo;
+
+    const grid = document.createElement("div");
+    grid.className="grid";
+
+    data.coches
+      .filter(c=>c.nombre.toLowerCase().includes(tipo.toLowerCase()))
+      .forEach((c)=>{
+        const i = data.coches.findIndex(x=>x.nombre===c.nombre);
+
+        let clase="libre";
+        if(c.estado==="uso" && c.tiempo>5) clase="activo";
+        if(c.tiempo<=5 && c.tiempo>0) clase="poco";
+        if(c.tiempo<=0 && c.estado==="uso") clase="terminado";
+
+        const div=document.createElement("div");
+        div.className="coche "+clase;
+
+        div.innerHTML=`
+          <b>${c.nombre}</b><br>
+          ${c.cliente || ""}<br>
+          ${c.tiempo>0 ? c.tiempo+" min":""}<br>
+          ${
+            c.estado==="uso"
+            ? `<button onclick="terminar(${i})">✔</button>
+               <button onclick="cancelar(${i})">✖</button>`
+            : `<button onclick="abrirModal(${i})">▶</button>`
+          }
+        `;
+
+        grid.appendChild(div);
+      });
+
+    seccion.appendChild(titulo);
+    seccion.appendChild(grid);
+    cont.appendChild(seccion);
+  });
+
+  actualizarDinero();
+}
+
 
     cont.appendChild(div);
   });
@@ -222,13 +246,21 @@ function renderClientes(){
 // HISTORIAL
 function renderHistorial(){
   const cont=document.getElementById("listaHistorial");
-  if(!cont) return;
-
   cont.innerHTML="";
+
   data.historial.forEach(d=>{
     const div=document.createElement("div");
     div.className="card";
-    div.innerText=`${d.fecha} | $${d.total}`;
+
+    div.innerHTML=`
+      📅 ${d.fecha}<br>
+      💰 Caja inicial: $${d.inicial || 0}<br>
+      🟢 Ventas: $${d.ventas || 0}<br>
+      🔴 Retiros: $${d.retiros || 0}<br>
+      🟡 Final: $${d.final || d.total || 0}<br>
+      👥 Clientes: ${d.clientes?.length || 0}
+    `;
+
     cont.appendChild(div);
   });
 }
