@@ -1,11 +1,19 @@
-let data = JSON.parse(localStorage.getItem("rc_data")) || {
-  coches: [],
-  clientes: [],
-  ventas: [],
-  retiros: [],
-  historial: [],
-  caja: { abierta:false, inicial:0 }
-};
+let data;
+
+// CARGA SEGURA
+try {
+  data = JSON.parse(localStorage.getItem("rc_data")) || {};
+} catch {
+  data = {};
+}
+
+// DEFAULT
+data.coches = data.coches || [];
+data.clientes = data.clientes || [];
+data.ventas = data.ventas || [];
+data.retiros = data.retiros || [];
+data.historial = data.historial || [];
+data.caja = data.caja || { abierta:false, inicial:0 };
 
 let cocheSel = null;
 
@@ -19,6 +27,7 @@ if(data.coches.length===0){
     nombre:n,
     estado:"libre",
     tiempo:0,
+    tiempoInicial:0,
     cliente:""
   }));
 }
@@ -27,7 +36,7 @@ function guardar(){
   localStorage.setItem("rc_data",JSON.stringify(data));
 }
 
-// CAMBIAR VISTA
+// VISTAS
 function cambiarVista(v){
   ["inicio","clientes","resumen"].forEach(id=>{
     const el = document.getElementById(id);
@@ -41,7 +50,7 @@ function cambiarVista(v){
   renderResumen();
 }
 
-// RENDER COCHES
+// RENDER
 function render(){
   const cont = document.getElementById("coches");
   if(!cont) return;
@@ -60,7 +69,11 @@ function render(){
     div.innerHTML=`
       <strong>${c.nombre}</strong><br>
       ${c.cliente || ""}<br>
-      ${c.tiempo > 0 ? c.tiempo+" min":""}
+      ${
+        c.tiempo>0
+        ? c.tiempo+" min restantes"
+        : (c.estado==="terminado" ? "Tiempo agotado" : "")
+      }
       <br><br>
       ${
         c.estado==="uso"
@@ -82,6 +95,7 @@ function abrirModal(i){
     alert("Debes abrir caja primero");
     return;
   }
+
   cocheSel=i;
   document.getElementById("modal").classList.remove("oculto");
 }
@@ -92,15 +106,16 @@ function cerrarModal(){
 
 // INICIAR
 function confirmarInicio(){
-  const nombre=document.getElementById("nombre").value;
+  const nombre=document.getElementById("nombre").value.trim();
   const tiempo=Number(document.getElementById("tiempo").value);
 
-  if(!nombre || !tiempo) return;
+  if(!nombre || tiempo<=0) return;
 
   const c=data.coches[cocheSel];
   c.estado="uso";
   c.cliente=nombre;
   c.tiempo=tiempo;
+  c.tiempoInicial=tiempo;
 
   data.clientes.push({
     nombre,
@@ -108,6 +123,9 @@ function confirmarInicio(){
     tiempo,
     hora:new Date().toLocaleTimeString()
   });
+
+  document.getElementById("nombre").value="";
+  document.getElementById("tiempo").value="";
 
   cerrarModal();
   guardar();
@@ -118,13 +136,16 @@ function confirmarInicio(){
 function terminar(i){
   const c=data.coches[i];
 
+  const total = Math.ceil(c.tiempoInicial/15)*50;
+
   data.ventas.push({
     cliente:c.cliente,
-    total: Math.ceil(c.tiempo/15)*50
+    total
   });
 
   c.estado="libre";
   c.tiempo=0;
+  c.tiempoInicial=0;
   c.cliente="";
 
   guardar();
@@ -136,6 +157,7 @@ function cancelar(i){
   const c=data.coches[i];
   c.estado="libre";
   c.tiempo=0;
+  c.tiempoInicial=0;
   c.cliente="";
   guardar();
   render();
@@ -146,7 +168,10 @@ setInterval(()=>{
   data.coches.forEach(c=>{
     if(c.estado==="uso"){
       c.tiempo--;
-      if(c.tiempo<=0) c.estado="terminado";
+      if(c.tiempo<=0){
+        c.tiempo=0;
+        c.estado="terminado";
+      }
     }
   });
   guardar();
@@ -161,14 +186,21 @@ function totalRetiros(){
   return data.retiros.reduce((a,r)=>a+r.monto,0);
 }
 function actualizarDinero(){
-  document.getElementById("dinero").innerText =
-    "💰 $" + (data.caja.inicial + totalVentas() - totalRetiros());
+  const el=document.getElementById("dinero");
+  if(!el) return;
+
+  el.innerText="💰 $" + (data.caja.inicial + totalVentas() - totalRetiros());
 }
 
 // CAJA
 function abrirCaja(){
+  if(data.caja.abierta){
+    alert("La caja ya está abierta");
+    return;
+  }
+
   const monto=Number(prompt("Monto inicial"));
-  if(!monto) return;
+  if(!monto || monto<0) return;
 
   data.caja={abierta:true,inicial:monto};
   guardar();
@@ -176,13 +208,18 @@ function abrirCaja(){
 }
 
 function cerrarCaja(){
+  if(!data.caja.abierta){
+    alert("No hay caja abierta");
+    return;
+  }
+
   if(!confirm("¿Cerrar caja?")) return;
 
   data.historial.push({
     fecha:new Date().toLocaleDateString(),
-    ventas:data.ventas,
-    retiros:data.retiros,
-    clientes:data.clientes
+    ventas:[...data.ventas],
+    retiros:[...data.retiros],
+    clientes:[...data.clientes]
   });
 
   data.ventas=[];
@@ -192,6 +229,7 @@ function cerrarCaja(){
 
   guardar();
   renderResumen();
+  render();
 }
 
 // CLIENTES
@@ -222,16 +260,21 @@ function renderResumen(){
 
 // RETIRO
 function hacerRetiro(){
+  if(!data.caja.abierta){
+    alert("Abre caja primero");
+    return;
+  }
+
   const monto=Number(prompt("Monto"));
-  if(!monto) return;
+  if(!monto || monto<=0) return;
 
   data.retiros.push({monto});
   guardar();
   render();
 }
 
-// INICIO SEGURO
-window.onload = ()=>{
+// INIT
+window.onload=()=>{
   render();
   renderClientes();
   renderResumen();
