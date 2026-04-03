@@ -1,31 +1,49 @@
 body {
   font-family: Arial;
-  background: #111;
+  background: #0f172a;
   color: white;
   text-align: center;
+}
+
+h1 {
+  margin: 20px;
+}
+
+.panel {
+  background: #1e293b;
+  margin: 20px;
+  padding: 15px;
+  border-radius: 15px;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 10px;
-  padding: 10px;
 }
 
 .coche {
   padding: 15px;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   font-weight: bold;
+  transition: 0.2s;
 }
 
-.libre { background: green; }
-.uso { background: orange; color: black; }
-.poco { background: yellow; color: black; }
+.coche:hover {
+  transform: scale(1.05);
+}
+
+/* COLORES */
+.libre { background: gray; }
+.activo { background: green; }
+.poco { background: orange; color: black; }
 .terminado { background: red; }
 
 .top button {
   margin: 5px;
   padding: 10px;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
 }
