@@ -1,5 +1,3 @@
-let vista = "inicio";
-
 let data = JSON.parse(localStorage.getItem("rc_data")) || {
   coches: [],
   clientes: [],
@@ -11,7 +9,7 @@ let data = JSON.parse(localStorage.getItem("rc_data")) || {
 
 let cocheSel = null;
 
-// COCHES
+// CREAR COCHES
 if(data.coches.length===0){
   data.coches = [
     "Drift 1","Drift 2",
@@ -30,11 +28,10 @@ function guardar(){
   localStorage.setItem("rc_data", JSON.stringify(data));
 }
 
-// 🔥 VISTAS SEGURAS
+// CAMBIAR VISTA
 function cambiarVista(v){
-  ["inicio","clientes","historial"].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.classList.remove("activo");
+  document.querySelectorAll(".vista").forEach(el=>{
+    el.classList.remove("activo");
   });
 
   const actual = document.getElementById(v);
@@ -44,7 +41,7 @@ function cambiarVista(v){
   if(v==="historial") renderHistorial();
 }
 
-// 🔥 RENDER
+// RENDER COCHES POR SECCIÓN
 function render(){
   const cont = document.getElementById("coches");
   cont.innerHTML="";
@@ -97,36 +94,25 @@ function render(){
   actualizarDinero();
 }
 
-
-    cont.appendChild(div);
-  });
-
-  actualizarDinero();
-}
-
-// MODAL SEGURO
+// MODAL
 function abrirModal(i){
-  const modal = document.getElementById("modal");
-  if(!modal) return;
-
   if(!data.caja.abierta){
     alert("Abre caja primero");
     return;
   }
 
   cocheSel=i;
-  modal.classList.remove("oculto");
+  document.getElementById("modal").classList.remove("oculto");
 }
 
 function cerrarModal(){
-  const modal = document.getElementById("modal");
-  if(modal) modal.classList.add("oculto");
+  document.getElementById("modal").classList.add("oculto");
 }
 
 // INICIAR
 function confirmarInicio(){
-  const nombre=document.getElementById("nombre")?.value;
-  const tiempo=Number(document.getElementById("tiempo")?.value);
+  const nombre=document.getElementById("nombre").value;
+  const tiempo=Number(document.getElementById("tiempo").value);
 
   if(!nombre || !tiempo) return;
 
@@ -153,6 +139,7 @@ function terminar(i){
   const c=data.coches[i];
 
   data.ventas.push({
+    cliente:c.cliente,
     total: Math.ceil(c.tiempoInicial/15)*50
   });
 
@@ -194,14 +181,17 @@ function totalRetiros(){
   return data.retiros.reduce((a,r)=>a+r.monto,0);
 }
 function actualizarDinero(){
-  const el = document.getElementById("dinero");
-  if(el){
-    el.innerText = "💰 $" + (data.caja.inicial + totalVentas() - totalRetiros());
-  }
+  document.getElementById("dinero").innerText =
+    "💰 $" + (data.caja.inicial + totalVentas() - totalRetiros());
 }
 
 // CAJA
 function abrirCaja(){
+  if(data.caja.abierta){
+    alert("Ya abierta");
+    return;
+  }
+
   const monto=Number(prompt("Monto inicial"));
   if(!monto) return;
 
@@ -211,13 +201,22 @@ function abrirCaja(){
 }
 
 function cerrarCaja(){
-  if(!confirm("Cerrar caja?")) return;
+  if(!data.caja.abierta) return;
 
-  const total = data.caja.inicial + totalVentas() - totalRetiros();
+  if(!confirm("¿Cerrar caja?")) return;
+
+  const ventas = totalVentas();
+  const retiros = totalRetiros();
+  const final = data.caja.inicial + ventas - retiros;
 
   data.historial.push({
     fecha:new Date().toLocaleDateString(),
-    total
+    hora:new Date().toLocaleTimeString(),
+    inicial:data.caja.inicial,
+    ventas,
+    retiros,
+    final,
+    clientes:[...data.clientes]
   });
 
   data.ventas=[];
@@ -233,17 +232,16 @@ function cerrarCaja(){
 // CLIENTES
 function renderClientes(){
   const cont=document.getElementById("listaClientes");
-  if(!cont) return;
-
   cont.innerHTML="";
+
   data.clientes.forEach(c=>{
     const div=document.createElement("div");
-    div.innerText=`${c.nombre} | ${c.coche}`;
+    div.innerText=`${c.nombre} | ${c.coche} | ${c.tiempo}min | ${c.hora}`;
     cont.appendChild(div);
   });
 }
 
-// HISTORIAL
+// HISTORIAL BONITO
 function renderHistorial(){
   const cont=document.getElementById("listaHistorial");
   cont.innerHTML="";
@@ -253,12 +251,12 @@ function renderHistorial(){
     div.className="card";
 
     div.innerHTML=`
-      📅 ${d.fecha}<br>
-      💰 Caja inicial: $${d.inicial || 0}<br>
-      🟢 Ventas: $${d.ventas || 0}<br>
-      🔴 Retiros: $${d.retiros || 0}<br>
-      🟡 Final: $${d.final || d.total || 0}<br>
-      👥 Clientes: ${d.clientes?.length || 0}
+      📅 ${d.fecha} - ${d.hora}<br>
+      💰 Inicial: $${d.inicial}<br>
+      🟢 Ventas: $${d.ventas}<br>
+      🔴 Retiros: $${d.retiros}<br>
+      🟡 Final: $${d.final}<br>
+      👥 Clientes: ${d.clientes.length}
     `;
 
     cont.appendChild(div);
@@ -267,6 +265,11 @@ function renderHistorial(){
 
 // RETIRO
 function hacerRetiro(){
+  if(!data.caja.abierta){
+    alert("Abre caja primero");
+    return;
+  }
+
   const monto=Number(prompt("Monto"));
   if(!monto) return;
 
