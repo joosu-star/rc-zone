@@ -5,10 +5,6 @@ body {
   text-align: center;
 }
 
-h1 {
-  margin: 20px;
-}
-
 .panel {
   background: #1e293b;
   margin: 20px;
@@ -25,13 +21,7 @@ h1 {
 .coche {
   padding: 15px;
   border-radius: 12px;
-  cursor: pointer;
   font-weight: bold;
-  transition: 0.2s;
-}
-
-.coche:hover {
-  transform: scale(1.05);
 }
 
 /* COLORES */
@@ -40,10 +30,38 @@ h1 {
 .poco { background: orange; color: black; }
 .terminado { background: red; }
 
-.top button {
+button {
   margin: 5px;
-  padding: 10px;
+  padding: 8px;
   border-radius: 8px;
   border: none;
   cursor: pointer;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+}
+
+.contenido {
+  background: #1e293b;
+  padding: 20px;
+  margin: 100px auto;
+  width: 300px;
+  border-radius: 10px;
+}
+
+.oculto {
+  display: none;
+}
+
+input {
+  width: 90%;
+  margin: 5px;
+  padding: 8px;
 }
