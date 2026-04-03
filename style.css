@@ -5,14 +5,12 @@ body {
   text-align: center;
 }
 
-.nav button {
-  margin: 5px;
+button {
   padding: 10px;
-}
-
-.top button {
   margin: 5px;
-  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
 }
 
 .grid {
@@ -25,6 +23,7 @@ body {
 .coche {
   padding: 15px;
   border-radius: 12px;
+  transition: 0.2s;
 }
 
 /* COLORES */
