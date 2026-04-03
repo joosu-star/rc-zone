@@ -7,10 +7,9 @@ let data = JSON.parse(localStorage.getItem("rc_data")) || {
   caja: { abierta:false, inicial:0 }
 };
 
-let actual = "inicio";
 let cocheSel = null;
 
-// INIT
+// INIT COCHES
 if(data.coches.length===0){
   data.coches = [
     "Drift 1","Drift 2",
@@ -28,17 +27,25 @@ function guardar(){
   localStorage.setItem("rc_data",JSON.stringify(data));
 }
 
-// VISTAS
+// CAMBIAR VISTA
 function cambiarVista(v){
   ["inicio","clientes","resumen"].forEach(id=>{
-    document.getElementById(id).classList.add("oculto");
+    const el = document.getElementById(id);
+    if(el) el.classList.add("oculto");
   });
-  document.getElementById(v).classList.remove("oculto");
+
+  const vista = document.getElementById(v);
+  if(vista) vista.classList.remove("oculto");
+
+  renderClientes();
+  renderResumen();
 }
 
 // RENDER COCHES
 function render(){
   const cont = document.getElementById("coches");
+  if(!cont) return;
+
   cont.innerHTML="";
 
   data.coches.forEach((c,i)=>{
@@ -51,14 +58,16 @@ function render(){
     div.className="coche "+clase;
 
     div.innerHTML=`
-      ${c.nombre}<br>
-      ${c.cliente}<br>
-      ${c.tiempo}
-      <br>
-      ${c.estado==="uso" ? `
-        <button onclick="terminar(${i})">✔</button>
-        <button onclick="cancelar(${i})">✖</button>
-      ` : `<button onclick="abrirModal(${i})">Iniciar</button>`}
+      <strong>${c.nombre}</strong><br>
+      ${c.cliente || ""}<br>
+      ${c.tiempo > 0 ? c.tiempo+" min":""}
+      <br><br>
+      ${
+        c.estado==="uso"
+        ? `<button onclick="terminar(${i})">✔</button>
+           <button onclick="cancelar(${i})">✖</button>`
+        : `<button onclick="abrirModal(${i})">▶</button>`
+      }
     `;
 
     cont.appendChild(div);
@@ -70,19 +79,23 @@ function render(){
 // MODAL
 function abrirModal(i){
   if(!data.caja.abierta){
-    alert("Debes abrir caja");
+    alert("Debes abrir caja primero");
     return;
   }
   cocheSel=i;
   document.getElementById("modal").classList.remove("oculto");
 }
+
 function cerrarModal(){
   document.getElementById("modal").classList.add("oculto");
 }
 
+// INICIAR
 function confirmarInicio(){
   const nombre=document.getElementById("nombre").value;
   const tiempo=Number(document.getElementById("tiempo").value);
+
+  if(!nombre || !tiempo) return;
 
   const c=data.coches[cocheSel];
   c.estado="uso";
@@ -148,8 +161,8 @@ function totalRetiros(){
   return data.retiros.reduce((a,r)=>a+r.monto,0);
 }
 function actualizarDinero(){
-  document.getElementById("dinero").innerText=
-    "$"+(data.caja.inicial+totalVentas()-totalRetiros());
+  document.getElementById("dinero").innerText =
+    "💰 $" + (data.caja.inicial + totalVentas() - totalRetiros());
 }
 
 // CAJA
@@ -159,10 +172,11 @@ function abrirCaja(){
 
   data.caja={abierta:true,inicial:monto};
   guardar();
+  render();
 }
 
 function cerrarCaja(){
-  if(!confirm("Cerrar caja?")) return;
+  if(!confirm("¿Cerrar caja?")) return;
 
   data.historial.push({
     fecha:new Date().toLocaleDateString(),
@@ -180,24 +194,28 @@ function cerrarCaja(){
   renderResumen();
 }
 
-// CLIENTES VIEW
+// CLIENTES
 function renderClientes(){
   const cont=document.getElementById("listaClientes");
+  if(!cont) return;
+
   cont.innerHTML="";
   data.clientes.forEach(c=>{
     const div=document.createElement("div");
-    div.innerText=`${c.nombre} - ${c.coche} - ${c.tiempo}min - ${c.hora}`;
+    div.innerText=`${c.nombre} | ${c.coche} | ${c.tiempo}min | ${c.hora}`;
     cont.appendChild(div);
   });
 }
 
-// RESUMEN VIEW
+// RESUMEN
 function renderResumen(){
   const cont=document.getElementById("listaResumen");
+  if(!cont) return;
+
   cont.innerHTML="";
   data.historial.forEach(d=>{
     const div=document.createElement("div");
-    div.innerText=`${d.fecha} - Clientes: ${d.clientes.length}`;
+    div.innerText=`${d.fecha} | Clientes: ${d.clientes.length}`;
     cont.appendChild(div);
   });
 }
@@ -206,14 +224,15 @@ function renderResumen(){
 function hacerRetiro(){
   const monto=Number(prompt("Monto"));
   if(!monto) return;
+
   data.retiros.push({monto});
   guardar();
+  render();
 }
 
-// LOOP VIEWS
-setInterval(()=>{
+// INICIO SEGURO
+window.onload = ()=>{
+  render();
   renderClientes();
   renderResumen();
-},1000);
-
-render();
+};
