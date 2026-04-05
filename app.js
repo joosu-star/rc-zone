@@ -1,14 +1,17 @@
 import { db } from "./firebase.js";
 import {
-  collection, addDoc, onSnapshot, updateDoc, doc, getDocs
+  collection,
+  addDoc,
+  onSnapshot,
+  updateDoc,
+  doc,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ================= DATA
 let coches = [];
 let config = { caja:{abierta:false,inicial:0} };
 let cocheSel = null;
 
-// ================= PRECIOS
 const precios = {
   coche:50,
   robot:50,
@@ -34,7 +37,7 @@ async function crearCoches(){
   for(const c of lista) await addDoc(ref,c);
 }
 
-// ================= CONFIG (CAJA)
+// ================= ESCUCHAR CONFIG
 function escucharConfig(){
   onSnapshot(doc(db,"config","global"),(d)=>{
     if(d.exists()) config = d.data();
@@ -42,7 +45,7 @@ function escucharConfig(){
   });
 }
 
-// ================= COCHES REALTIME
+// ================= ESCUCHAR COCHES
 function escucharCoches(){
   onSnapshot(collection(db,"coches"),snap=>{
     coches = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -54,8 +57,7 @@ function escucharCoches(){
 function escucharHistorial(){
   onSnapshot(collection(db,"historial"),snap=>{
     const cont=document.getElementById("historial");
-    cont.innerHTML="<h2>Historial</h2>";
-
+    cont.innerHTML="";
     snap.docs.forEach(d=>{
       const h=d.data();
       const div=document.createElement("div");
@@ -104,20 +106,26 @@ function render(){
 function abrirModal(i){
   if(!config.caja.abierta) return alert("Caja cerrada");
   cocheSel=i;
-  modal.classList.add("activo");
+  document.getElementById("modal").classList.add("activo");
 }
-function cerrarModal(){ modal.classList.remove("activo"); }
+
+function cerrarModal(){
+  document.getElementById("modal").classList.remove("activo");
+}
 
 // ================= INICIAR
 async function confirmarInicio(){
-  const nombre=nombreInput.value;
-  const tiempo=Number(tiempoInput.value);
+  const nombre=document.getElementById("nombre").value;
+  const tiempo=Number(document.getElementById("tiempo").value);
   if(!nombre||!tiempo) return;
 
   const c=coches[cocheSel];
 
   await updateDoc(doc(db,"coches",c.id),{
-    estado:"uso",cliente:nombre,tiempo,tiempoInicial:tiempo
+    estado:"uso",
+    cliente:nombre,
+    tiempo,
+    tiempoInicial:tiempo
   });
 
   cerrarModal();
@@ -136,10 +144,10 @@ async function terminar(i){
   });
 
   await updateDoc(doc(db,"coches",c.id),{
-    estado:"libre",tiempo:0,cliente:""
+    estado:"libre",
+    tiempo:0,
+    cliente:""
   });
-
-  actualizarDinero();
 }
 
 // ================= CAJA
@@ -153,7 +161,7 @@ async function abrirCaja(){
 }
 
 async function cerrarCaja(){
-  const total=parseInt(dinero.innerText.replace(/\D/g,""));
+  const total=parseInt(document.getElementById("dinero").innerText.replace(/\D/g,""));
 
   await addDoc(collection(db,"historial"),{
     fecha:new Date().toLocaleString(),
@@ -167,13 +175,13 @@ async function cerrarCaja(){
 
 // ================= DINERO
 function actualizarDinero(){
-  dinero.innerText="💰 $"+config.caja.inicial;
+  document.getElementById("dinero").innerText="💰 $"+config.caja.inicial;
 }
 
 // ================= TIMER
 setInterval(()=>{
   coches.forEach(async c=>{
-    if(c.estado==="uso"&&c.tiempo>0){
+    if(c.estado==="uso" && c.tiempo>0){
       await updateDoc(doc(db,"coches",c.id),{
         tiempo:c.tiempo-1
       });
@@ -184,14 +192,6 @@ setInterval(()=>{
 // ================= INIT
 window.addEventListener("DOMContentLoaded",async()=>{
   await crearCoches();
-
-  // crear config si no existe
-  try{
-    await updateDoc(doc(db,"config","global"),{
-      caja:{abierta:false,inicial:0}
-    });
-  }catch{}
-
   escucharCoches();
   escucharConfig();
   escucharHistorial();
