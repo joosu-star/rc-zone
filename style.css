@@ -1,17 +1,20 @@
 body {
   font-family: Arial;
-  background: #0f172a;
+  background-color: #0f172a;
+
+  /* 🔥 FIX FONDO */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
   color: white;
   text-align: center;
+  margin: 0;
 }
 
-.vista {
-  display: none;
-}
-
-.vista.activo {
-  display: block;
-}
+.vista { display: none; }
+.vista.activo { display: block; }
 
 button {
   padding: 10px;
@@ -21,9 +24,7 @@ button {
   cursor: pointer;
 }
 
-.seccion {
-  margin-top: 20px;
-}
+.seccion { margin-top: 20px; }
 
 .grid {
   display: grid;
@@ -42,7 +43,6 @@ button {
 .poco { background: orange; color:black; }
 .terminado { background: red; }
 
-/* MODAL */
 .modal {
   display: none;
   position: fixed;
@@ -55,9 +55,7 @@ button {
   align-items:center;
 }
 
-.modal.activo {
-  display: flex;
-}
+.modal.activo { display: flex; }
 
 .contenido {
   background:#1e293b;
@@ -65,7 +63,6 @@ button {
   border-radius:10px;
 }
 
-/* HISTORIAL */
 .card {
   background: #1e293b;
   margin: 10px;
@@ -74,7 +71,6 @@ button {
   text-align: left;
 }
 
-/* PANEL */
 .panel {
   background:#1e293b;
   margin:15px;
