@@ -1,4 +1,3 @@
-/* 🔥 RESET TOTAL */
 * {
   margin: 0;
   padding: 0;
@@ -7,16 +6,15 @@
 
 body {
   font-family: Arial;
-  background: #0f172a !important; /* 🔥 fuerza el fondo */
+  background: #0f172a;
   color: white;
   text-align: center;
 }
 
-/* VISTAS */
+/* vistas */
 .vista { display: none; }
 .vista.activo { display: block; }
 
-/* BOTONES */
 button {
   padding: 10px;
   margin: 5px;
@@ -25,7 +23,7 @@ button {
   cursor: pointer;
 }
 
-/* GRID */
+/* grid */
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -33,29 +31,19 @@ button {
   padding: 10px;
 }
 
-/* COCHES */
 .coche {
   padding: 12px;
   border-radius: 10px;
-  background: #1e293b; /* 🔥 fondo base oscuro */
+  background: #1e293b;
 }
 
-/* ESTADOS (YA NO ROMPEN TODO) */
+/* estados */
 .libre { opacity: 0.5; }
+.activo { border: 2px solid #22c55e; }
+.poco { border: 2px solid orange; }
+.terminado { border: 2px solid red; }
 
-.activo {
-  border: 2px solid #22c55e;
-}
-
-.poco {
-  border: 2px solid orange;
-}
-
-.terminado {
-  border: 2px solid red;
-}
-
-/* MODAL */
+/* modal */
 .modal {
   display: none;
   position: fixed;
@@ -76,10 +64,23 @@ button {
   border-radius:10px;
 }
 
-/* PANEL */
+/* panel */
 .panel {
   background:#1e293b;
   margin:15px;
   padding:15px;
   border-radius:10px;
 }
+
+/* cards */
+.card {
+  background:#1e293b;
+  margin:10px;
+  padding:12px;
+  border-radius:10px;
+  text-align:left;
+}
+
+.verde { color:#22c55e; }
+.rojo { color:#ef4444; }
+.azul { color:#3b82f6; }
