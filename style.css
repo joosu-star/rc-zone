@@ -1,13 +1,6 @@
 body {
   font-family: Arial;
-  background-color: #0f172a;
-
-  /* 🔥 FIX FONDO */
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-
+  background: #0f172a;
   color: white;
   text-align: center;
   margin: 0;
@@ -23,8 +16,6 @@ button {
   border: none;
   cursor: pointer;
 }
-
-.seccion { margin-top: 20px; }
 
 .grid {
   display: grid;
@@ -61,14 +52,6 @@ button {
   background:#1e293b;
   padding:20px;
   border-radius:10px;
-}
-
-.card {
-  background: #1e293b;
-  margin: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  text-align: left;
 }
 
 .panel {
