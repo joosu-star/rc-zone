@@ -1,14 +1,22 @@
-body {
-  font-family: Arial;
-  background: #0f172a;
-  color: white;
-  text-align: center;
+/* 🔥 RESET TOTAL */
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+body {
+  font-family: Arial;
+  background: #0f172a !important; /* 🔥 fuerza el fondo */
+  color: white;
+  text-align: center;
+}
+
+/* VISTAS */
 .vista { display: none; }
 .vista.activo { display: block; }
 
+/* BOTONES */
 button {
   padding: 10px;
   margin: 5px;
@@ -17,6 +25,7 @@ button {
   cursor: pointer;
 }
 
+/* GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -24,16 +33,29 @@ button {
   padding: 10px;
 }
 
+/* COCHES */
 .coche {
   padding: 12px;
   border-radius: 10px;
+  background: #1e293b; /* 🔥 fondo base oscuro */
 }
 
-.libre { background: gray; }
-.activo { background: green; }
-.poco { background: orange; color:black; }
-.terminado { background: red; }
+/* ESTADOS (YA NO ROMPEN TODO) */
+.libre { opacity: 0.5; }
 
+.activo {
+  border: 2px solid #22c55e;
+}
+
+.poco {
+  border: 2px solid orange;
+}
+
+.terminado {
+  border: 2px solid red;
+}
+
+/* MODAL */
 .modal {
   display: none;
   position: fixed;
@@ -54,6 +76,7 @@ button {
   border-radius:10px;
 }
 
+/* PANEL */
 .panel {
   background:#1e293b;
   margin:15px;
