@@ -18,19 +18,14 @@
 <div class="top">
   <button onclick="abrirCaja()">Abrir Caja</button>
   <button onclick="cerrarCaja()">Cerrar Caja</button>
-  <button onclick="hacerRetiro()">Retiro</button>
-  <button onclick="hacerDeposito()">Depósito</button>
 </div>
 
 <h2 id="dinero">💰 $0</h2>
 
-<!-- PANEL -->
+<!-- SOLO PRECIOS -->
 <div class="panel">
-  <h3>⚙️ Configuración</h3>
+  <h3>💲 Precios</h3>
   <button onclick="editarPrecios()">Editar precios</button>
-
-  <input id="nuevoCocheNombre" placeholder="Nombre coche">
-  <button onclick="agregarCoche()">Agregar coche</button>
 </div>
 
 <div id="inicio" class="vista activo">
@@ -58,7 +53,6 @@
   </div>
 </div>
 
-<!-- 🔊 SONIDO -->
 <audio id="alarma" src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg"></audio>
 
 <script src="app.js"></script>
