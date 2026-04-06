@@ -203,11 +203,35 @@ function actualizarDinero(){
 }
 
 // CAJA
-function abrirCaja(){
-  const m=Number(prompt("Monto inicial"));
-  if(m<=0) return;
-  data.caja={abierta:true,inicial:m};
-  guardar(); render();
+function cerrarCaja(){
+  if(!data.caja.abierta) return;
+
+  // 🔥 CONFIRMACIÓN
+  const ok = confirm("⚠️ ¿Seguro que quieres cerrar la caja?\nSe guardará el historial y se reiniciarán los datos.");
+
+  if(!ok) return;
+
+  const registro = {
+    fecha:new Date().toLocaleDateString(),
+    hora:new Date().toLocaleTimeString(),
+    inicial:data.caja.inicial,
+    ventas:totalVentas(),
+    retiros:totalRetiros(),
+    depositos:totalDepositos(),
+    final:data.caja.inicial + totalVentas() + totalDepositos() - totalRetiros()
+  };
+
+  data.historial.push(registro);
+
+  data.ventas = [];
+  data.retiros = [];
+  data.depositos = [];
+  data.clientes = [];
+  data.caja = { abierta:false, inicial:0 };
+
+  guardar();
+  render();
+  renderHistorial();
 }
 
 function cerrarCaja(){
