@@ -109,38 +109,12 @@ function cerrarModal(){
 
 // INICIAR + TICKET
 function imprimirTicket(info){
-  const w = window.open("", "", "width=300,height=600");
+  const area = document.getElementById("ticketArea");
 
-  w.document.write(`
-    <html>
-    <head>
-      <style>
-        body{
-          font-family: monospace;
-          font-size: 12px;
-          width: 58mm;
-          margin: 0;
-          padding: 5px;
-        }
-
-        .center{text-align:center;}
-        .bold{font-weight:bold;}
-        hr{
-          border: none;
-          border-top: 1px dashed black;
-          margin: 6px 0;
-        }
-      </style>
-    </head>
-
-    <body>
-
-      <div class="center bold">
-        RC-ZONE-18
-      </div>
-      <div class="center bold">
-        LA DIVERSION AL MAXIMO
-      </div>
+  area.innerHTML = `
+    <div id="ticket">
+      <div class="center bold">RC-ZONE-18</div>
+      <div class="center bold">LA DIVERSION AL MAXIMO</div>
 
       <hr>
 
@@ -159,24 +133,18 @@ function imprimirTicket(info){
 
       <hr>
 
-      <div class="center">
-        ¡GRACIAS POR VISITARNOS!
-      </div>
+      <div class="center">GRACIAS</div>
+    </div>
+  `;
 
-      <br><br><br>
+  area.style.display = "block";
 
-      <script>
-        window.print();
-        window.close();
-      <\/script>
+  window.print();
 
-    </body>
-    </html>
-  `);
-
-  w.document.close();
+  setTimeout(()=>{
+    area.style.display = "none";
+  }, 500);
 }
-
 // TERMINAR
 function terminar(i){
   const c=data.coches[i];
