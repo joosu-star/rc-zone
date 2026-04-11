@@ -1,3 +1,4 @@
+// ================= DATOS =================
 let data = JSON.parse(localStorage.getItem("rc_data")) || {};
 
 function init(){
@@ -8,6 +9,7 @@ function init(){
   data.depositos = data.depositos || [];
   data.historial = data.historial || [];
   data.caja = data.caja || { abierta:false, inicial:0 };
+  data.ticket = data.ticket || 1;
 
   data.precios = data.precios || {
     normal:50,
@@ -17,7 +19,7 @@ function init(){
 }
 init();
 
-// CREAR COCHES
+// ================= COCHES =================
 if(data.coches.length === 0){
   data.coches = [
     "Drift 1","Drift 2",
@@ -29,7 +31,8 @@ if(data.coches.length === 0){
     estado:"libre",
     tiempo:0,
     tiempoInicial:0,
-    cliente:""
+    cliente:"",
+    inicio:null
   }));
 }
 
@@ -37,7 +40,7 @@ function guardar(){
   localStorage.setItem("rc_data", JSON.stringify(data));
 }
 
-// PRECIOS
+// ================= PRECIOS =================
 function precio(nombre){
   nombre = nombre.toLowerCase();
   if(nombre.includes("robot")) return data.precios.robot;
@@ -45,27 +48,126 @@ function precio(nombre){
   return data.precios.normal;
 }
 
-// RENDER
-function render(){
-  const cont = document.getElementById("coches");
-  cont.innerHTML = "";
+// ================= INICIAR =================
+let seleccionado=null;
 
-  const tipos = ["Drift","Futbol","Robot","Luchador"];
+function abrirModal(i){
+  if(!data.caja.abierta) return alert("Abre caja");
+  seleccionado=i;
+  document.getElementById("modal").classList.add("activo");
+}
+
+function cerrarModal(){
+  document.getElementById("modal").classList.remove("activo");
+}
+
+function confirmarInicio(conTicket=false){
+  const nombre = document.getElementById("nombre").value;
+  const tiempo = Number(document.getElementById("tiempo").value);
+
+  if(!nombre || tiempo<=0) return alert("Datos inválidos");
+
+  const c = data.coches[seleccionado];
+
+  c.estado="uso";
+  c.tiempo=tiempo;
+  c.tiempoInicial=tiempo;
+  c.cliente=nombre;
+  c.inicio=new Date();
+
+  guardar();
+  cerrarModal();
+  render();
+
+  if(conTicket){
+    const fin=new Date(c.inicio.getTime()+tiempo*60000);
+    const costo=Math.ceil(tiempo/15)*precio(c.nombre);
+
+    imprimirTicket({
+      nombre,
+      coche:c.nombre,
+      inicio:c.inicio,
+      fin,
+      tiempo,
+      costo
+    });
+  }
+}
+
+// ================= TICKET =================
+function imprimirTicket(info){
+
+  const numero=String(data.ticket).padStart(6,"0");
+  data.ticket++;
+
+  const area=document.getElementById("ticketArea");
+
+  area.innerHTML=`
+    <div id="ticket">
+      <div class="center bold" style="font-size:16px;">RC ZONE 189</div>
+      <div class="center">Entretención al máximo</div>
+
+      <div class="center">Dirección:</div>
+      <div class="center">Plaza Tangamanga Isla C115</div>
+      <div class="center">San Luis Potosí</div>
+
+      <br>
+
+      <div class="center bold" style="font-size:18px;">
+        TEL: 4442140002
+      </div>
+
+      <hr>
+
+      Ticket: ${numero}<br>
+      Cliente: ${info.nombre}<br>
+      Coche: ${info.coche}<br>
+
+      <hr>
+
+      Inicio: ${info.inicio.toLocaleString()}<br>
+      Fin: ${info.fin.toLocaleString()}<br>
+      Tiempo: ${info.tiempo} min<br>
+
+      <hr>
+
+      <div class="bold">Subtotal: $${info.costo} MXN</div>
+
+      <hr>
+
+      <div class="center">¡Gracias por tu visita!</div>
+    </div>
+  `;
+
+  guardar();
+
+  area.style.display="block";
+  window.print();
+
+  setTimeout(()=>area.style.display="none",500);
+}
+
+// ================= RENDER =================
+function render(){
+  const cont=document.getElementById("coches");
+  cont.innerHTML="";
+
+  const tipos=["Drift","Futbol","Robot","Luchador"];
 
   tipos.forEach(tipo=>{
-    const titulo = document.createElement("h2");
-    titulo.innerText = tipo;
+    const titulo=document.createElement("h2");
+    titulo.innerText=tipo;
 
-    const grid = document.createElement("div");
+    const grid=document.createElement("div");
     grid.className="grid";
 
     data.coches.forEach((c,i)=>{
       if(!c.nombre.startsWith(tipo)) return;
 
-      const div = document.createElement("div");
+      const div=document.createElement("div");
       div.className="coche "+estado(c);
 
-      div.innerHTML = `
+      div.innerHTML=`
         <b>${c.nombre}</b><br>
         ${c.cliente || ""}<br>
         ${c.tiempo>0 ? c.tiempo+" min":""}<br>
@@ -94,68 +196,12 @@ function estado(c){
   return "activo";
 }
 
-// MODAL
-let seleccionado=null;
-
-function abrirModal(i){
-  if(!data.caja.abierta) return alert("Abre caja");
-  seleccionado=i;
-  document.getElementById("modal").classList.add("activo");
-}
-
-function cerrarModal(){
-  document.getElementById("modal").classList.remove("activo");
-}
-
-// INICIAR + TICKET
-function imprimirTicket(info){
-  const area = document.getElementById("ticketArea");
-
-  area.innerHTML = `
-    <div id="ticket">
-      <div class="center bold">RC-ZONE-18</div>
-      <div class="center bold">LA DIVERSION AL MAXIMO</div>
-
-      <hr>
-
-      Cliente: ${info.nombre}<br>
-      Coche: ${info.coche}<br>
-
-      <hr>
-
-      Inicio: ${info.inicio.toLocaleTimeString()}<br>
-      Fin: ${info.fin.toLocaleTimeString()}<br>
-      Tiempo: ${info.tiempo} min<br>
-
-      <hr>
-
-      TOTAL: $${info.costo}
-
-      <hr>
-
-      <div class="center">GRACIAS</div>
-    </div>
-  `;
-
-  area.style.display = "block";
-
-  window.print();
-
-  setTimeout(()=>{
-    area.style.display = "none";
-  }, 500);
-}
-// TERMINAR
+// ================= RESTO =================
 function terminar(i){
   const c=data.coches[i];
-
   const total=Math.ceil(c.tiempoInicial/15)*precio(c.nombre);
 
-  data.ventas.push({
-    cliente:c.cliente,
-    coche:c.nombre,
-    total
-  });
+  data.ventas.push({cliente:c.cliente,coche:c.nombre,total});
 
   c.estado="libre";
   c.tiempo=0;
@@ -165,7 +211,6 @@ function terminar(i){
   render();
 }
 
-// CANCELAR
 function cancelar(i){
   const c=data.coches[i];
   c.estado="libre";
@@ -175,15 +220,9 @@ function cancelar(i){
   render();
 }
 
-// TIMER
 setInterval(()=>{
   data.coches.forEach(c=>{
     if(c.estado==="uso"){
-      if(c.tiempo===1){
-        const a=document.getElementById("alarma");
-        a.currentTime=0;
-        a.play();
-      }
       c.tiempo--;
       if(c.tiempo<0) c.tiempo=0;
     }
@@ -192,28 +231,15 @@ setInterval(()=>{
   render();
 },60000);
 
-// DINERO
-function totalVentas(){
-  return data.ventas.reduce((a,v)=>a+v.total,0);
-}
-function totalRetiros(){
-  return data.retiros.reduce((a,v)=>a+v.monto,0);
-}
-function totalDepositos(){
-  return data.depositos.reduce((a,v)=>a+v.monto,0);
-}
+function totalVentas(){ return data.ventas.reduce((a,v)=>a+v.total,0); }
+function totalRetiros(){ return data.retiros.reduce((a,v)=>a+v.monto,0); }
+function totalDepositos(){ return data.depositos.reduce((a,v)=>a+v.monto,0); }
 
 function actualizarDinero(){
-  const total =
-    data.caja.inicial +
-    totalVentas() +
-    totalDepositos() -
-    totalRetiros();
-
+  const total=data.caja.inicial+totalVentas()+totalDepositos()-totalRetiros();
   document.getElementById("dinero").innerText="💰 $"+total;
 }
 
-// CAJA CON CONFIRMACIÓN
 function abrirCaja(){
   const m=Number(prompt("Monto inicial"));
   if(m<=0) return;
@@ -224,24 +250,15 @@ function abrirCaja(){
 function cerrarCaja(){
   if(!confirm("¿Cerrar caja?")) return;
 
-  const registro={
-    fecha:new Date().toLocaleDateString(),
-    hora:new Date().toLocaleTimeString(),
-    final:document.getElementById("dinero").innerText
-  };
-
-  data.historial.push(registro);
-
   data.ventas=[];
   data.retiros=[];
   data.depositos=[];
   data.clientes=[];
   data.caja={abierta:false,inicial:0};
 
-  guardar(); render(); renderHistorial();
+  guardar(); render();
 }
 
-// RETIROS
 function hacerRetiro(){
   const monto=Number(prompt("Monto"));
   if(monto<=0) return;
@@ -249,7 +266,6 @@ function hacerRetiro(){
   guardar(); render();
 }
 
-// DEPÓSITOS
 function hacerDeposito(){
   const monto=Number(prompt("Monto"));
   if(monto<=0) return;
@@ -257,31 +273,6 @@ function hacerDeposito(){
   guardar(); render();
 }
 
-// CLIENTES
-function renderClientes(){
-  const cont=document.getElementById("listaClientes");
-  cont.innerHTML="";
-  data.clientes.forEach(c=>{
-    cont.innerHTML+=`
-      <div class="card">
-        ${c.nombre}<br>
-        ${c.coche}<br>
-        ${c.inicio}
-      </div>
-    `;
-  });
-}
-
-// HISTORIAL
-function renderHistorial(){
-  const cont=document.getElementById("listaHistorial");
-  cont.innerHTML="";
-  data.historial.forEach(h=>{
-    cont.innerHTML+=`<div class="card">${h.fecha} ${h.final}</div>`;
-  });
-}
-
-// PRECIOS
 function editarPrecios(){
   const n=Number(prompt("Normal",data.precios.normal));
   const r=Number(prompt("Robot",data.precios.robot));
@@ -294,13 +285,9 @@ function editarPrecios(){
   guardar();
 }
 
-// VISTAS
 function cambiarVista(v){
   document.querySelectorAll(".vista").forEach(x=>x.classList.remove("activo"));
   document.getElementById(v).classList.add("activo");
-
-  if(v==="clientes") renderClientes();
-  if(v==="historial") renderHistorial();
 }
 
 window.addEventListener("DOMContentLoaded",render);
