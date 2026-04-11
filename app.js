@@ -18,7 +18,7 @@ function init(){
 }
 init();
 
-// 🔥 CREAR TODOS LOS COCHES (ARREGLADO)
+// CREAR COCHES
 if(data.coches.length === 0){
   data.coches = [
     "Drift 1","Drift 2",
@@ -60,7 +60,7 @@ function cerrarModal(){
   document.getElementById("modal").classList.remove("activo");
 }
 
-// 🔥 INICIAR
+// INICIAR
 function confirmarInicio(conTicket=false){
   const nombre = document.getElementById("nombre").value;
   const tiempo = Number(document.getElementById("tiempo").value);
@@ -74,6 +74,13 @@ function confirmarInicio(conTicket=false){
   c.tiempoInicial=tiempo;
   c.cliente=nombre;
   c.inicio=new Date();
+
+  // 👥 CLIENTES
+  data.clientes.push({
+    nombre,
+    coche:c.nombre,
+    inicio:c.inicio.toLocaleString()
+  });
 
   guardar();
   cerrarModal();
@@ -94,7 +101,7 @@ function confirmarInicio(conTicket=false){
   }
 }
 
-// 🔥 TICKET
+// 🧾 TICKET
 function imprimirTicket(info){
 
   const numero = String(data.ticket).padStart(6,"0");
@@ -202,7 +209,7 @@ function estado(c){
   return "activo";
 }
 
-// RESTO
+// TERMINAR
 function terminar(i){
   const c=data.coches[i];
 
@@ -222,6 +229,7 @@ function terminar(i){
   render();
 }
 
+// CANCELAR
 function cancelar(i){
   const c=data.coches[i];
   c.estado="libre";
@@ -231,17 +239,29 @@ function cancelar(i){
   render();
 }
 
+// 🔊 TIMER + SONIDO
 setInterval(()=>{
   data.coches.forEach(c=>{
     if(c.estado==="uso"){
+
+      if(c.tiempo === 1){
+        const a = document.getElementById("alarma");
+        if(a){
+          a.currentTime = 0;
+          a.play().catch(()=>{});
+        }
+      }
+
       c.tiempo--;
       if(c.tiempo<0) c.tiempo=0;
     }
   });
+
   guardar();
   render();
 },60000);
 
+// DINERO
 function totalVentas(){ return data.ventas.reduce((a,v)=>a+v.total,0); }
 function totalRetiros(){ return data.retiros.reduce((a,v)=>a+v.monto,0); }
 function totalDepositos(){ return data.depositos.reduce((a,v)=>a+v.monto,0); }
@@ -251,6 +271,7 @@ function actualizarDinero(){
   document.getElementById("dinero").innerText="💰 $"+total;
 }
 
+// CAJA
 function abrirCaja(){
   const m=Number(prompt("Monto inicial"));
   if(m<=0) return;
@@ -258,8 +279,17 @@ function abrirCaja(){
   guardar(); render();
 }
 
+// 📜 HISTORIAL BONITO
 function cerrarCaja(){
   if(!confirm("¿Cerrar caja?")) return;
+
+  const total = document.getElementById("dinero").innerText;
+
+  data.historial.push({
+    fecha: new Date().toLocaleDateString(),
+    hora: new Date().toLocaleTimeString(),
+    total
+  });
 
   data.ventas=[];
   data.retiros=[];
@@ -267,9 +297,12 @@ function cerrarCaja(){
   data.clientes=[];
   data.caja={abierta:false,inicial:0};
 
-  guardar(); render();
+  guardar();
+  render();
+  renderHistorial();
 }
 
+// RETIROS / DEPÓSITOS
 function hacerRetiro(){
   const monto=Number(prompt("Monto"));
   if(monto<=0) return;
@@ -284,6 +317,39 @@ function hacerDeposito(){
   guardar(); render();
 }
 
+// 👥 CLIENTES
+function renderClientes(){
+  const cont = document.getElementById("listaClientes");
+  cont.innerHTML = "";
+
+  data.clientes.forEach(c=>{
+    cont.innerHTML += `
+      <div class="card">
+        <b>${c.nombre}</b><br>
+        🚗 ${c.coche}<br>
+        🕒 ${c.inicio}
+      </div>
+    `;
+  });
+}
+
+// 📜 HISTORIAL
+function renderHistorial(){
+  const cont = document.getElementById("listaHistorial");
+  cont.innerHTML = "";
+
+  data.historial.slice().reverse().forEach(h=>{
+    cont.innerHTML += `
+      <div class="card">
+        📅 <b>${h.fecha}</b><br>
+        🕒 ${h.hora}<br>
+        💰 ${h.total}
+      </div>
+    `;
+  });
+}
+
+// PRECIOS
 function editarPrecios(){
   const n=Number(prompt("Normal",data.precios.normal));
   const r=Number(prompt("Robot",data.precios.robot));
@@ -296,9 +362,13 @@ function editarPrecios(){
   guardar();
 }
 
+// VISTAS
 function cambiarVista(v){
   document.querySelectorAll(".vista").forEach(x=>x.classList.remove("activo"));
   document.getElementById(v).classList.add("activo");
+
+  if(v==="clientes") renderClientes();
+  if(v==="historial") renderHistorial();
 }
 
 window.addEventListener("DOMContentLoaded",render);
