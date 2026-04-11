@@ -77,6 +77,17 @@ button {
 
 /* IMPRESIÓN */
 @media print {
+
+  @page {
+    size: 80mm auto;   /* 🔥 tamaño real ticket */
+    margin: 0;         /* 🔥 sin márgenes */
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
   body * {
     visibility: hidden;
   }
@@ -93,17 +104,27 @@ button {
   }
 
   #ticket {
-    width: 72mm;
+    width: 100%;
+    max-width: 72mm;
     margin: 0 auto;
+
     font-family: monospace;
-    font-size: 12px;
+    font-size: 13px;
+
     text-align: center;
+
+    color: #000 !important;              /* 🔥 negro fuerte */
+    font-weight: 600;                   /* 🔥 más oscuro */
+    letter-spacing: 0.5px;              /* 🔥 mejor lectura */
   }
 
-  .bold { font-weight: bold; }
+  .bold {
+    font-weight: 900 !important;        /* 🔥 negritas reales */
+  }
 
   .line {
-    border-top: 1px dashed black;
-    margin: 6px 0;
+    border-top: 2px dashed black;       /* 🔥 separador más visible */
+    margin: 8px 0;
   }
+
 }
