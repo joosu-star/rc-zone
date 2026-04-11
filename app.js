@@ -283,13 +283,34 @@ function abrirCaja(){
 function cerrarCaja(){
   if(!confirm("¿Cerrar caja?")) return;
 
-  const total = document.getElementById("dinero").innerText;
+  const totalFinal = data.caja.inicial + totalVentas() + totalDepositos() - totalRetiros();
 
-  data.historial.push({
+  const registro = {
     fecha: new Date().toLocaleDateString(),
     hora: new Date().toLocaleTimeString(),
-    total
-  });
+
+    inicial: data.caja.inicial,
+    ventas: totalVentas(),
+    retiros: totalRetiros(),
+    depositos: totalDepositos(),
+
+    total: totalFinal,
+    numVentas: data.ventas.length
+  };
+
+  data.historial.push(registro);
+
+  // reset
+  data.ventas=[];
+  data.retiros=[];
+  data.depositos=[];
+  data.clientes=[];
+  data.caja={abierta:false,inicial:0};
+
+  guardar();
+  render();
+  renderHistorial();
+}
 
   data.ventas=[];
   data.retiros=[];
