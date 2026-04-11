@@ -1,6 +1,5 @@
 let data = JSON.parse(localStorage.getItem("rc_data")) || {};
 
-// INIT
 function init(){
   data.coches = data.coches || [];
   data.clientes = data.clientes || [];
@@ -108,13 +107,17 @@ function cerrarModal(){
   document.getElementById("modal").classList.remove("activo");
 }
 
-function confirmarInicio(){
+// INICIAR + TICKET
+function confirmarInicio(imprimir=false){
   const nombre=document.getElementById("nombre").value;
   const tiempo=Number(document.getElementById("tiempo").value);
 
   if(!nombre || tiempo<=0) return;
 
   const c=data.coches[seleccionado];
+
+  const inicio = new Date();
+  const fin = new Date(inicio.getTime() + tiempo*60000);
 
   c.estado="uso";
   c.cliente=nombre;
@@ -124,13 +127,55 @@ function confirmarInicio(){
   data.clientes.push({
     nombre,
     coche:c.nombre,
-    inicio:new Date().toLocaleTimeString(),
+    inicio:inicio.toLocaleTimeString(),
+    fin:fin.toLocaleTimeString(),
     tiempo
   });
 
-  cerrarModal();
   guardar();
   render();
+  cerrarModal();
+
+  if(imprimir){
+    imprimirTicket({
+      nombre,
+      coche:c.nombre,
+      inicio,
+      fin,
+      tiempo,
+      costo: Math.ceil(tiempo/15)*precio(c.nombre)
+    });
+  }
+}
+
+// TICKET
+function imprimirTicket(info){
+  const w = window.open("", "", "width=300,height=600");
+
+  w.document.write(`
+    <html>
+    <body style="font-family:monospace;text-align:center;">
+      <b>RC-ZONE-18<br>LA DIVERSION AL MAXIMO</b>
+      <hr>
+      Cliente: ${info.nombre}<br>
+      Coche: ${info.coche}<br>
+      <hr>
+      Inicio: ${info.inicio.toLocaleTimeString()}<br>
+      Fin: ${info.fin.toLocaleTimeString()}<br>
+      Tiempo: ${info.tiempo} min<br>
+      <hr>
+      Costo: $${info.costo}
+      <hr>
+      Gracias por visitarnos
+      <script>
+        window.print();
+        window.close();
+      <\/script>
+    </body>
+    </html>
+  `);
+
+  w.document.close();
 }
 
 // TERMINAR
@@ -142,9 +187,7 @@ function terminar(i){
   data.ventas.push({
     cliente:c.cliente,
     coche:c.nombre,
-    total,
-    inicio:c.inicio,
-    fin:new Date().toLocaleTimeString()
+    total
   });
 
   c.estado="libre";
@@ -155,6 +198,7 @@ function terminar(i){
   render();
 }
 
+// CANCELAR
 function cancelar(i){
   const c=data.coches[i];
   c.estado="libre";
@@ -164,7 +208,7 @@ function cancelar(i){
   render();
 }
 
-// TIMER + SONIDO
+// TIMER
 setInterval(()=>{
   data.coches.forEach(c=>{
     if(c.estado==="uso"){
@@ -202,7 +246,7 @@ function actualizarDinero(){
   document.getElementById("dinero").innerText="💰 $"+total;
 }
 
-// CAJA
+// CAJA CON CONFIRMACIÓN
 function abrirCaja(){
   const m=Number(prompt("Monto inicial"));
   if(m<=0) return;
@@ -211,50 +255,38 @@ function abrirCaja(){
 }
 
 function cerrarCaja(){
-  if(!data.caja.abierta) return;
+  if(!confirm("¿Cerrar caja?")) return;
 
-  // 🔥 CONFIRMACIÓN
-  const ok = confirm("⚠️ ¿Seguro que quieres cerrar la caja?\nSe guardará el historial y se reiniciarán los datos.");
-
-  if(!ok) return;
-
-  const registro = {
+  const registro={
     fecha:new Date().toLocaleDateString(),
     hora:new Date().toLocaleTimeString(),
-    inicial:data.caja.inicial,
-    ventas:totalVentas(),
-    retiros:totalRetiros(),
-    depositos:totalDepositos(),
-    final:data.caja.inicial + totalVentas() + totalDepositos() - totalRetiros()
+    final:document.getElementById("dinero").innerText
   };
 
   data.historial.push(registro);
 
-  data.ventas = [];
-  data.retiros = [];
-  data.depositos = [];
-  data.clientes = [];
-  data.caja = { abierta:false, inicial:0 };
+  data.ventas=[];
+  data.retiros=[];
+  data.depositos=[];
+  data.clientes=[];
+  data.caja={abierta:false,inicial:0};
 
-  guardar();
-  render();
-  renderHistorial();
+  guardar(); render(); renderHistorial();
 }
 
-// RETIROS / DEPOSITOS
+// RETIROS
 function hacerRetiro(){
   const monto=Number(prompt("Monto"));
   if(monto<=0) return;
-  const motivo=prompt("Motivo")||"";
-  data.retiros.push({monto,motivo});
+  data.retiros.push({monto});
   guardar(); render();
 }
 
+// DEPÓSITOS
 function hacerDeposito(){
   const monto=Number(prompt("Monto"));
   if(monto<=0) return;
-  const motivo=prompt("Motivo")||"";
-  data.depositos.push({monto,motivo});
+  data.depositos.push({monto});
   guardar(); render();
 }
 
@@ -262,14 +294,12 @@ function hacerDeposito(){
 function renderClientes(){
   const cont=document.getElementById("listaClientes");
   cont.innerHTML="";
-
   data.clientes.forEach(c=>{
     cont.innerHTML+=`
       <div class="card">
-        <b>${c.nombre}</b><br>
-        🚗 ${c.coche}<br>
-        ⏱ Inicio: ${c.inicio}<br>
-        ⌛ ${c.tiempo} min
+        ${c.nombre}<br>
+        ${c.coche}<br>
+        ${c.inicio}
       </div>
     `;
   });
@@ -279,18 +309,8 @@ function renderClientes(){
 function renderHistorial(){
   const cont=document.getElementById("listaHistorial");
   cont.innerHTML="";
-
   data.historial.forEach(h=>{
-    cont.innerHTML+=`
-      <div class="card">
-        📅 ${h.fecha} ${h.hora}<br>
-        💰 Inicial: $${h.inicial}<br>
-        <span class="verde">Ventas: $${h.ventas}</span><br>
-        <span class="azul">Depósitos: $${h.depositos}</span><br>
-        <span class="rojo">Retiros: $${h.retiros}</span><br>
-        🟡 Final: $${h.final}
-      </div>
-    `;
+    cont.innerHTML+=`<div class="card">${h.fecha} ${h.final}</div>`;
   });
 }
 
