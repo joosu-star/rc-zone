@@ -108,69 +108,68 @@ function cerrarModal(){
 }
 
 // INICIAR + TICKET
-function confirmarInicio(imprimir=false){
-  const nombre=document.getElementById("nombre").value;
-  const tiempo=Number(document.getElementById("tiempo").value);
-
-  if(!nombre || tiempo<=0) return;
-
-  const c=data.coches[seleccionado];
-
-  const inicio = new Date();
-  const fin = new Date(inicio.getTime() + tiempo*60000);
-
-  c.estado="uso";
-  c.cliente=nombre;
-  c.tiempo=tiempo;
-  c.tiempoInicial=tiempo;
-
-  data.clientes.push({
-    nombre,
-    coche:c.nombre,
-    inicio:inicio.toLocaleTimeString(),
-    fin:fin.toLocaleTimeString(),
-    tiempo
-  });
-
-  guardar();
-  render();
-  cerrarModal();
-
-  if(imprimir){
-    imprimirTicket({
-      nombre,
-      coche:c.nombre,
-      inicio,
-      fin,
-      tiempo,
-      costo: Math.ceil(tiempo/15)*precio(c.nombre)
-    });
-  }
-}
-
-// TICKET
 function imprimirTicket(info){
   const w = window.open("", "", "width=300,height=600");
 
   w.document.write(`
     <html>
-    <body style="font-family:monospace;text-align:center;">
-      <b>RC-ZONE-18<br>LA DIVERSION AL MAXIMO</b>
+    <head>
+      <style>
+        body{
+          font-family: monospace;
+          font-size: 12px;
+          width: 58mm;
+          margin: 0;
+          padding: 5px;
+        }
+
+        .center{text-align:center;}
+        .bold{font-weight:bold;}
+        hr{
+          border: none;
+          border-top: 1px dashed black;
+          margin: 6px 0;
+        }
+      </style>
+    </head>
+
+    <body>
+
+      <div class="center bold">
+        RC-ZONE-18
+      </div>
+      <div class="center bold">
+        LA DIVERSION AL MAXIMO
+      </div>
+
       <hr>
+
       Cliente: ${info.nombre}<br>
       Coche: ${info.coche}<br>
+
       <hr>
+
       Inicio: ${info.inicio.toLocaleTimeString()}<br>
       Fin: ${info.fin.toLocaleTimeString()}<br>
       Tiempo: ${info.tiempo} min<br>
+
       <hr>
-      Costo: $${info.costo}
+
+      TOTAL: $${info.costo}
+
       <hr>
-      Gracias por visitarnos
+
+      <div class="center">
+        ¡GRACIAS POR VISITARNOS!
+      </div>
+
+      <br><br><br>
+
       <script>
         window.print();
         window.close();
       <\/script>
+
     </body>
     </html>
   `);
