@@ -362,9 +362,16 @@ function renderHistorial(){
   data.historial.slice().reverse().forEach(h=>{
     cont.innerHTML += `
       <div class="card">
-        📅 <b>${h.fecha}</b><br>
-        🕒 ${h.hora}<br>
-        💰 ${h.total}
+        <b>📅 ${h.fecha}</b> - ${h.hora}<br><br>
+
+        💵 Inicial: $${h.inicial}<br>
+        🟢 Ventas: $${h.ventas} (${h.numVentas})<br>
+        🔵 Depósitos: $${h.depositos}<br>
+        🔴 Retiros: $${h.retiros}<br>
+
+        <hr>
+
+        <b>💰 Total: $${h.total}</b>
       </div>
     `;
   });
