@@ -18,7 +18,7 @@ function init(){
 }
 init();
 
-// CREAR COCHES
+// COCHES
 if(data.coches.length === 0){
   data.coches = [
     "Drift 1","Drift 2",
@@ -75,7 +75,7 @@ function confirmarInicio(conTicket=false){
   c.cliente=nombre;
   c.inicio=new Date();
 
-  // 👥 CLIENTES
+  // CLIENTES
   data.clientes.push({
     nombre,
     coche:c.nombre,
@@ -101,7 +101,7 @@ function confirmarInicio(conTicket=false){
   }
 }
 
-// 🧾 TICKET
+// TICKET
 function imprimirTicket(info){
 
   const numero = String(data.ticket).padStart(6,"0");
@@ -239,7 +239,7 @@ function cancelar(i){
   render();
 }
 
-// 🔊 TIMER + SONIDO
+// TIMER + SONIDO
 setInterval(()=>{
   data.coches.forEach(c=>{
     if(c.estado==="uso"){
@@ -271,36 +271,23 @@ function actualizarDinero(){
   document.getElementById("dinero").innerText="💰 $"+total;
 }
 
-// CAJA
-function abrirCaja(){
-  const m=Number(prompt("Monto inicial"));
-  if(m<=0) return;
-  data.caja={abierta:true,inicial:m};
-  guardar(); render();
-}
-
-// 📜 HISTORIAL BONITO
+// CAJA + HISTORIAL COMPLETO
 function cerrarCaja(){
   if(!confirm("¿Cerrar caja?")) return;
 
   const totalFinal = data.caja.inicial + totalVentas() + totalDepositos() - totalRetiros();
 
-  const registro = {
+  data.historial.push({
     fecha: new Date().toLocaleDateString(),
     hora: new Date().toLocaleTimeString(),
-
     inicial: data.caja.inicial,
     ventas: totalVentas(),
     retiros: totalRetiros(),
     depositos: totalDepositos(),
-
     total: totalFinal,
     numVentas: data.ventas.length
-  };
+  });
 
-  data.historial.push(registro);
-
-  // reset
   data.ventas=[];
   data.retiros=[];
   data.depositos=[];
@@ -312,15 +299,11 @@ function cerrarCaja(){
   renderHistorial();
 }
 
-  data.ventas=[];
-  data.retiros=[];
-  data.depositos=[];
-  data.clientes=[];
-  data.caja={abierta:false,inicial:0};
-
-  guardar();
-  render();
-  renderHistorial();
+function abrirCaja(){
+  const m=Number(prompt("Monto inicial"));
+  if(m<=0) return;
+  data.caja={abierta:true,inicial:m};
+  guardar(); render();
 }
 
 // RETIROS / DEPÓSITOS
@@ -338,7 +321,7 @@ function hacerDeposito(){
   guardar(); render();
 }
 
-// 👥 CLIENTES
+// CLIENTES
 function renderClientes(){
   const cont = document.getElementById("listaClientes");
   cont.innerHTML = "";
@@ -354,7 +337,7 @@ function renderClientes(){
   });
 }
 
-// 📜 HISTORIAL
+// HISTORIAL PRO
 function renderHistorial(){
   const cont = document.getElementById("listaHistorial");
   cont.innerHTML = "";
