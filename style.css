@@ -75,7 +75,7 @@ button {
   text-align:left;
 }
 
-/* 🔥 IMPRESIÓN TÉRMICA EPSON */
+/* IMPRESIÓN */
 @media print {
   body * {
     visibility: hidden;
@@ -90,21 +90,20 @@ button {
     left: 0;
     top: 0;
     width: 80mm;
-    background: white;
-    color: black;
   }
 
   #ticket {
+    width: 72mm;
+    margin: 0 auto;
     font-family: monospace;
-    font-size: 13px;
+    font-size: 12px;
+    text-align: center;
   }
 
-  .center { text-align: center; }
   .bold { font-weight: bold; }
 
-  hr {
-    border: none;
+  .line {
     border-top: 1px dashed black;
-    margin: 5px 0;
+    margin: 6px 0;
   }
 }
